@@ -38,7 +38,7 @@ db.exec(`
     token        TEXT PRIMARY KEY,
     user_id      INTEGER NOT NULL REFERENCES users(id),
     created_at   TEXT NOT NULL DEFAULT (datetime('now'))
-  )
+  );
 
   CREATE INDEX IF NOT EXISTS idx_tasks_due ON tasks(due_date) WHERE deleted_at IS NULL;
   CREATE INDEX IF NOT EXISTS idx_revisions_task ON task_revisions(task_id);
