@@ -1,7 +1,7 @@
 import { db } from "./db";
 
 const users = [
-    { name: "hijo", pin: "2007" },
+    { name: "deib", pin: "2007" },
     { name: "papá", pin: "2606" },
     { name: "mamá", pin: "1974" }
 ];
