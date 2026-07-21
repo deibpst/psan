@@ -17,7 +17,7 @@ export function getUser(req: Request): User | null {
         .get("cookie")
         ?.split(";")
         .map((c) => c.trim())
-        .find((c) => c.startsWith("sessions"))
+        .find((c) => c.startsWith("session="))
         ?.slice("session=".length);
 
     if (!token) return null;

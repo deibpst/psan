@@ -11,7 +11,12 @@ const server = Bun.serve({
         }
 
         if (url.pathname === "/api/login" && req.method === "POST") {
-            const { name, pin } = await req.json();
+            const body = (await req.json().catch(() => null)) as { name?: unknown; pin?: unknown } | null;
+            const { name, pin } = body ?? {};
+
+            if (typeof name !== "string" || typeof pin !== "string") {
+                return Response.json({ error: "Faltan name o pin" }, { status: 400 });
+            }
 
             const user = db
                 .query("SELECT id, name, pin_hash FROM users WHERE name = ?")
