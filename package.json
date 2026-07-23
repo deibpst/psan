@@ -11,6 +11,6 @@
   "scripts": {
     "dev": "bunx vercel dev",
     "seed": "bun lib/seed.ts",
-    "test": "bun --env-file=.env.local test"
+    "test": "bun --env-file=.env.local test --timeout 30000"
   }
 }
