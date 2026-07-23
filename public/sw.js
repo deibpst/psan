@@ -1,5 +1,5 @@
 // Cache del app shell: estáticos cache-first, /api siempre red
-const VERSION = "psan-v5";
+const VERSION = "psan-v6";
 const SHELL = [
     "/", "/styles.css", "/app.js", "/api.js",
     "/views/login.js", "/views/tasks.js", "/views/calendar.js", "/views/lists.js",
@@ -27,21 +27,30 @@ self.addEventListener("fetch", (e) => {
     );
 });
 
-// Push sin payload: el SW consulta la API (con cookie de sesión) y compone el texto
+// Push sin payload: el SW consulta la API (con cookie de sesión) y compone el texto.
+// Primero avisos por evento pendientes; si no hay, es el recordatorio diario.
+const notify = (body) =>
+    self.registration.showNotification("psan", { body, icon: "/icons/icon-192.png" });
+
 self.addEventListener("push", (e) => {
-    const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Mexico_City" }).format(new Date());
-    e.waitUntil(
-        fetch("/api/tasks", { credentials: "same-origin" })
-            .then((r) => r.json())
-            .then((tasks) => {
-                const n = tasks.filter((t) =>
-                    t.status !== "done" && t.due_date && t.due_date.slice(0, 10) <= hoy).length;
-                return n === 1 ? "1 tarea por vencer" : `${n} tareas por vencer`;
-            })
-            .catch(() => "Tienes tareas por vencer")
-            .then((body) =>
-                self.registration.showNotification("psan", { body, icon: "/icons/icon-192.png" }))
-    );
+    e.waitUntil((async () => {
+        try {
+            const pending = await fetch("/api/notifications", { credentials: "same-origin" }).then((r) => r.json());
+            if (Array.isArray(pending) && pending.length) {
+                for (const n of pending.slice(0, 3)) await notify(n.body);
+                if (pending.length > 3) await notify(`…y ${pending.length - 3} avisos más`);
+                return;
+            }
+            const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Mexico_City" }).format(new Date());
+            const tasks = await fetch("/api/tasks", { credentials: "same-origin" }).then((r) => r.json());
+            const n = tasks.filter((t) =>
+                t.status !== "done" && t.due_date && t.due_date.slice(0, 10) <= hoy).length;
+            // n=0: otro dispositivo ya recogió el aviso — mensaje genérico
+            await notify(n === 0 ? "Tienes actividad nueva" : n === 1 ? "1 tarea por vencer" : `${n} tareas por vencer`);
+        } catch {
+            await notify("Tienes actividad nueva");
+        }
+    })());
 });
 
 self.addEventListener("notificationclick", (e) => {

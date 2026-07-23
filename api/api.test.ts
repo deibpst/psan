@@ -7,6 +7,7 @@ import * as listsIndex from "./lists/index";
 import * as listItems from "./lists/[id]/items";
 import * as push from "./push";
 import * as cronNotify from "./cron/notify";
+import * as notifications from "./notifications";
 
 let userId: number;
 let cookie: string;
@@ -49,6 +50,7 @@ afterAll(async () => {
         await sql`DELETE FROM list_items WHERE list_id = ${testListId}`;
         await sql`DELETE FROM lists WHERE id = ${testListId}`;
     }
+    await sql`DELETE FROM notifications WHERE user_id IN (${userId}, ${userId2})`;
     await sql`DELETE FROM sessions WHERE user_id IN (${userId}, ${userId2})`;
     await sql`DELETE FROM users WHERE id IN (${userId}, ${userId2})`;
     await sql.end();
@@ -158,6 +160,40 @@ test("tasks: assignees múltiples — crear, filtrar, reemplazar", async () => {
         req(`/api/tasks/${created.id}`, { method: "PATCH", body: JSON.stringify({ assignees: [userId2] }) })
     ));
     expect(patched.assignees).toEqual([userId2]);
+});
+
+// ---------- avisos por evento ----------
+
+test("notifications: asignar, done ajeno, eliminar → avisos correctos", async () => {
+    expect((await notifications.GET(req("/api/notifications", {}, false))).status).toBe(401);
+
+    // user1 crea asignándola a user2 → aviso "te asignó" para user2
+    const created = await json(await tasksIndex.POST(
+        req("/api/tasks", { method: "POST", body: JSON.stringify({ title: "Aviso", assignees: [userId2] }) })
+    ));
+    cleanupTaskIds.push(created.id);
+
+    // user2 la marca hecha → aviso "marcó como hecha" para user1 (creador)
+    await taskById.PATCH(req(`/api/tasks/${created.id}`, {
+        method: "PATCH", body: JSON.stringify({ status: "done" }), headers: { cookie: cookie2 },
+    }));
+
+    // user1 la elimina → aviso "eliminó" para user2
+    await taskById.DELETE(req(`/api/tasks/${created.id}`, { method: "DELETE" }));
+
+    const deUser2 = await json(await notifications.GET(
+        req("/api/notifications", { headers: { cookie: cookie2 } })
+    ));
+    const bodies2 = deUser2.map((n: any) => n.body).join(" | ");
+    expect(bodies2).toContain("te asignó");
+    expect(bodies2).toContain("eliminó");
+    expect(bodies2).toContain("«Aviso»");
+
+    const deUser1 = await json(await notifications.GET(req("/api/notifications")));
+    expect(deUser1.map((n: any) => n.body).join(" | ")).toContain("marcó como hecha");
+
+    // segunda lectura: ya entregados → vacío
+    expect((await json(await notifications.GET(req("/api/notifications")))).length).toBe(0);
 });
 
 // ---------- recurrence ----------

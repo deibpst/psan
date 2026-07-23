@@ -92,6 +92,17 @@ export async function migrate() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT now()
       )`;
 
+    // Avisos por evento: el server guarda el texto, el push va vacío y el
+    // service worker lo recoge de GET /api/notifications
+    await sql`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id           SERIAL PRIMARY KEY,
+        user_id      INTEGER NOT NULL REFERENCES users(id),
+        body         TEXT NOT NULL,
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+        delivered_at TIMESTAMPTZ
+      )`;
+
     await sql`
       CREATE TABLE IF NOT EXISTS login_attempts (
         id        SERIAL PRIMARY KEY,

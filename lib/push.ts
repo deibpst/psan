@@ -1,4 +1,4 @@
-import { sql } from "./db";
+import { sql, pgIntArray } from "./db";
 
 // Web Push sin payload (RFC 8030 + VAPID RFC 8292), cero dependencias.
 // VAPID_PUBLIC_KEY: punto EC P-256 sin comprimir (65 bytes) en base64url.
@@ -37,6 +37,24 @@ async function vapidJwt(audience: string): Promise<string> {
 }
 
 export type PushSub = { id: number; endpoint: string };
+
+// Guarda el aviso por usuario y despierta sus dispositivos con push vacío.
+// Mejor esfuerzo: nunca rompe la operación que lo dispara.
+export async function notifyUsers(userIds: number[], body: string) {
+    const ids = [...new Set(userIds)].filter((id) => Number.isInteger(id) && id > 0);
+    if (!ids.length) return;
+    try {
+        for (const uid of ids) {
+            await sql`INSERT INTO notifications (user_id, body) VALUES (${uid}, ${body})`;
+        }
+        const subs = await sql`
+          SELECT id, endpoint FROM push_subscriptions
+          WHERE user_id = ANY(${pgIntArray(ids)}::int[])`;
+        await Promise.allSettled(subs.map((s: PushSub) => sendPush(s)));
+    } catch {
+        // sin VAPID configurado o push caído: el aviso queda guardado igual
+    }
+}
 
 // Push vacío: el service worker compone el texto. true = entregado.
 export async function sendPush(sub: PushSub): Promise<boolean> {

@@ -1,5 +1,6 @@
 import { sql, pgIntArray, normTask } from "../../lib/db";
 import { getUser } from "../../lib/auth";
+import { notifyUsers } from "../../lib/push";
 import { RECURRENCES, isIdArray } from "./index";
 
 const STATUSES = ["pending", "in_progress", "done"] as const;
@@ -85,6 +86,21 @@ export async function PATCH(req: Request) {
       WHERE id = ${id}
       RETURNING *`;
 
+    // Avisos: asignación nueva por separado; al resto de interesados
+    // (asignados + creador, menos el autor) el cambio que ocurrió
+    const before = Array.from((task.assignees as number[]) ?? []);
+    const after = Array.from((updated.assignees as number[]) ?? []);
+    const newlyAssigned = after.filter((id) => !before.includes(id) && id !== user.id);
+    await notifyUsers(newlyAssigned, `${user.name} te asignó: «${updated.title}»`);
+
+    const interested = [...after, updated.created_by as number]
+        .filter((id) => id !== user.id && !newlyAssigned.includes(id));
+    const action =
+        statusChanged && updated.status === "done" ? "marcó como hecha" :
+        statusChanged && updated.status === "in_progress" ? "puso en progreso" :
+        "editó";
+    await notifyUsers(interested, `${user.name} ${action}: «${updated.title}»`);
+
     // Tarea recurrente completada → nace la siguiente ocurrencia
     if (statusChanged && updated.status === "done" && updated.recurrence) {
         await sql`
@@ -116,6 +132,10 @@ export async function DELETE(req: Request) {
       VALUES (${id}, ${user.id}, ${JSON.stringify(task)}::jsonb)`;
 
     await sql`UPDATE tasks SET deleted_at = now(), updated_at = now() WHERE id = ${id}`;
+
+    // Aviso a los asignados (el creador es quien borra)
+    const assigned = Array.from((task.assignees as number[]) ?? []).filter((a) => a !== user.id);
+    await notifyUsers(assigned, `${user.name} eliminó: «${task.title}»`);
 
     return Response.json({ ok: true });
 }
