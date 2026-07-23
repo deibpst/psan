@@ -1,11 +1,10 @@
 // Cache del app shell: estáticos cache-first, /api siempre red
-const VERSION = "psan-v3";
+const VERSION = "psan-v4";
 const SHELL = [
     "/", "/styles.css", "/app.js", "/api.js",
     "/views/login.js", "/views/tasks.js", "/views/calendar.js", "/views/lists.js",
     "/manifest.json", "/psan.ico", "/icons/icon-192.png", "/icons/icon-512.png",
-    "/fonts/inter-var.woff2", "/fonts/jetbrains-var.woff2",
-    "/fonts/playfair-var.woff2", "/fonts/playfair-italic-var.woff2",
+    "/fonts/outfit-var.woff2", "/fonts/reenie-beanie.woff2",
 ];
 
 self.addEventListener("install", (e) => {
