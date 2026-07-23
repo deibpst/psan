@@ -119,3 +119,43 @@ try {
 }
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+
+// ===== Notificaciones push =====
+const pushBtn = document.getElementById("push-toggle");
+
+function setPushState(on) {
+    pushBtn.classList.toggle("on", on);
+    pushBtn.setAttribute("aria-pressed", String(on));
+    pushBtn.setAttribute("aria-label", on ? "Desactivar notificaciones" : "Activar notificaciones");
+}
+
+if ("serviceWorker" in navigator && "PushManager" in window) {
+    pushBtn.hidden = false;
+    navigator.serviceWorker.ready
+        .then((reg) => reg.pushManager.getSubscription())
+        .then((sub) => setPushState(!!sub));
+
+    pushBtn.addEventListener("click", async () => {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+            await api("/api/push", { method: "DELETE", body: { endpoint: sub.endpoint } });
+            await sub.unsubscribe();
+            setPushState(false);
+            return;
+        }
+        if ((await Notification.requestPermission()) !== "granted") return;
+        const { key } = await api("/api/push");
+        const newSub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: b64urlToBytes(key),
+        });
+        await api("/api/push", { method: "POST", body: newSub.toJSON() });
+        setPushState(true);
+    });
+}
+
+function b64urlToBytes(s) {
+    const raw = atob(s.replace(/-/g, "+").replace(/_/g, "/"));
+    return Uint8Array.from(raw, (c) => c.charCodeAt(0));
+}

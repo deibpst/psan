@@ -65,6 +65,18 @@ export async function migrate() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT now()
       )`;
 
+    await sql`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS recurrence TEXT`;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS push_subscriptions (
+        id         SERIAL PRIMARY KEY,
+        user_id    INTEGER NOT NULL REFERENCES users(id),
+        endpoint   TEXT NOT NULL UNIQUE,
+        p256dh     TEXT NOT NULL,
+        auth       TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )`;
+
     await sql`
       CREATE TABLE IF NOT EXISTS login_attempts (
         id        SERIAL PRIMARY KEY,

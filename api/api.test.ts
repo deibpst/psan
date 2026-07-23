@@ -5,6 +5,8 @@ import * as tasksIndex from "./tasks/index";
 import * as taskById from "./tasks/[id]";
 import * as listsIndex from "./lists/index";
 import * as listItems from "./lists/[id]/items";
+import * as push from "./push";
+import * as cronNotify from "./cron/notify";
 
 let userId: number;
 let cookie: string;
@@ -111,6 +113,67 @@ test("tasks: crear, listar, editar (revisión + atribución de status), borrar",
         req(`/api/tasks/${task.id}`, { method: "PATCH", body: JSON.stringify({ title: "x" }) })
     );
     expect(gone.status).toBe(404);
+});
+
+// ---------- recurrence ----------
+
+test("tasks: recurrence inválida → 400", async () => {
+    const res = await tasksIndex.POST(
+        req("/api/tasks", { method: "POST", body: JSON.stringify({ title: "x", recurrence: "yearly" }) })
+    );
+    expect(res.status).toBe(400);
+});
+
+test("tasks: recurrente hecha → nace siguiente ocurrencia futura", async () => {
+    const title = `rec-${crypto.randomUUID()}`;
+    const ayer = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const created = await json(await tasksIndex.POST(
+        req("/api/tasks", { method: "POST", body: JSON.stringify({ title, due_date: ayer, recurrence: "weekly" }) })
+    ));
+    cleanupTaskIds.push(created.id);
+    expect(created.recurrence).toBe("weekly");
+
+    const done = await taskById.PATCH(
+        req(`/api/tasks/${created.id}`, { method: "PATCH", body: JSON.stringify({ status: "done" }) })
+    );
+    expect(done.status).toBe(200);
+
+    const rows = await sql`SELECT * FROM tasks WHERE title = ${title} AND deleted_at IS NULL ORDER BY id`;
+    expect(rows.length).toBe(2);
+    const next = rows[1];
+    cleanupTaskIds.push(next.id);
+    expect(next.status).toBe("pending");
+    expect(next.recurrence).toBe("weekly");
+    const hoy = new Date().toISOString().slice(0, 10);
+    expect(String(next.due_date).slice(0, 10) > hoy).toBe(true);
+});
+
+// ---------- push ----------
+
+test("push: sin sesión → 401; suscribir/borrar ok", async () => {
+    const sub = {
+        endpoint: `https://example.com/psan-test-${crypto.randomUUID()}`,
+        keys: { p256dh: "test", auth: "test" },
+    };
+    expect((await push.POST(req("/api/push", { method: "POST", body: JSON.stringify(sub) }, false))).status).toBe(401);
+
+    const bad = await push.POST(req("/api/push", { method: "POST", body: JSON.stringify({ endpoint: "nope" }) }));
+    expect(bad.status).toBe(400);
+
+    expect((await push.POST(req("/api/push", { method: "POST", body: JSON.stringify(sub) }))).status).toBe(201);
+    expect((await push.DELETE(req("/api/push", { method: "DELETE", body: JSON.stringify({ endpoint: sub.endpoint }) }))).status).toBe(200);
+});
+
+test("cron: sin secreto → 401, con secreto → 200", async () => {
+    expect((await cronNotify.GET(new Request("http://x/api/cron/notify"))).status).toBe(401);
+    // corre contra datos reales: solo se valida forma, no cantidades
+    const ok = await cronNotify.GET(new Request("http://x/api/cron/notify", {
+        headers: { authorization: `Bearer ${process.env.CRON_SECRET}` },
+    }));
+    expect(ok.status).toBe(200);
+    const body = await json(ok);
+    expect(typeof body.sent).toBe("number");
+    expect(typeof body.failed).toBe("number");
 });
 
 // ---------- lists ----------

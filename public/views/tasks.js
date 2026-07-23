@@ -81,7 +81,7 @@ function cardHtml(t) {
     return `
       <article class="card" data-task="${t.id}" style="--u:${u.color}">
         <div class="card-body">
-          <div class="card-title ${t.status === "done" ? "done" : ""}">${esc(t.title)}</div>
+          <div class="card-title ${t.status === "done" ? "done" : ""}">${t.recurrence ? "↻ " : ""}${esc(t.title)}</div>
           <div class="card-meta">
             <span class="dot"></span><span>${u.label}</span>
             <span class="chip">${attribution}</span>
@@ -98,10 +98,13 @@ async function markDone(id, section) {
     renderTasks(section);
 }
 
+const REC_LABEL = { "": "No se repite", daily: "Diario", weekly: "Semanal", biweekly: "Quincenal", monthly: "Mensual" };
+
 function taskSheet(task, section) {
     const isEdit = !!task;
     let status = task?.status ?? "pending";
     let assignee = task?.assigned_to ?? null;
+    let recurrence = task?.recurrence ?? "";
 
     const el = openSheet(`
       <h2>${isEdit ? "Editar tarea" : "Nueva tarea"}</h2>
@@ -115,6 +118,11 @@ function taskSheet(task, section) {
         <div class="member-row" id="f-assignee">
           ${MEMBERS.map((m) => `<button type="button" data-id="${m.id}" class="${m.id === assignee ? "selected" : ""}">
               ${avatarHtml(m)}<span>${m.name}</span></button>`).join("")}
+        </div></div>
+      <div class="field"><label>Se repite</label>
+        <div class="seg" id="f-rec">
+          ${Object.entries(REC_LABEL).map(([k, v]) =>
+            `<button type="button" data-r="${k}" class="${k === recurrence ? "selected" : ""}">${v}</button>`).join("")}
         </div></div>
       <div class="field"><label>Estado</label>
         <div class="seg" id="f-status">
@@ -134,6 +142,13 @@ function taskSheet(task, section) {
         assignee = assignee === id ? null : id; // tap de nuevo = desasignar
         for (const b of el.querySelectorAll("#f-assignee button"))
             b.classList.toggle("selected", Number(b.dataset.id) === assignee);
+    };
+    el.querySelector("#f-rec").onclick = (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        recurrence = btn.dataset.r;
+        for (const b of el.querySelectorAll("#f-rec button"))
+            b.classList.toggle("selected", b.dataset.r === recurrence);
     };
     el.querySelector("#f-status").onclick = (e) => {
         const btn = e.target.closest("button");
@@ -163,6 +178,7 @@ function taskSheet(task, section) {
             notes: el.querySelector("#f-notes").value.trim() || null,
             due_date: el.querySelector("#f-due").value || null,
             assigned_to: assignee,
+            recurrence: recurrence || null,
         };
         if (isEdit) {
             await api(`/api/tasks/${task.id}`, { method: "PATCH", body: { ...body, status } });

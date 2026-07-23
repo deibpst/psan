@@ -87,6 +87,10 @@ input, textarea, select { font: inherit; }
 }
 .icon-btn:hover { background: var(--surface-2); }
 
+/* campana llena + acento = notificaciones activas */
+#push-toggle.on { color: var(--accent); }
+#push-toggle.on svg { fill: currentColor; }
+
 /* toggle: ícono visible = modo al que cambia */
 :root[data-theme="light"] #icon-sun { display: none; }
 :root[data-theme="dark"] #icon-moon { display: none; }

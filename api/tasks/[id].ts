@@ -1,7 +1,23 @@
 import { sql } from "../../lib/db";
 import { getUser } from "../../lib/auth";
+import { RECURRENCES } from "./index";
 
 const STATUSES = ["pending", "in_progress", "done"] as const;
+
+const STEP_DAYS = { daily: 1, weekly: 7, biweekly: 14 } as const;
+
+// Siguiente vencimiento estrictamente futuro (una tarea hecha tarde no
+// reaparece ya vencida). Base: due_date original, o hoy si no había.
+// ponytail: monthly usa setMonth — 31 ene + 1 mes = 3 mar; aceptado.
+function nextDue(due: string | null, recurrence: string): string {
+    const today = new Date().toISOString().slice(0, 10);
+    const d = new Date((due ?? today) + "T12:00:00Z");
+    do {
+        if (recurrence === "monthly") d.setUTCMonth(d.getUTCMonth() + 1);
+        else d.setUTCDate(d.getUTCDate() + STEP_DAYS[recurrence as keyof typeof STEP_DAYS]);
+    } while (d.toISOString().slice(0, 10) <= today);
+    return d.toISOString().slice(0, 10);
+}
 
 function taskId(req: Request): number | null {
     const id = Number(new URL(req.url).pathname.split("/").pop());
@@ -40,6 +56,9 @@ export async function PATCH(req: Request) {
     if (body.assigned_to !== undefined && body.assigned_to !== null && !Number.isInteger(body.assigned_to)) {
         return Response.json({ error: "assigned_to inválido" }, { status: 400 });
     }
+    if (body.recurrence !== undefined && body.recurrence !== null && !RECURRENCES.includes(body.recurrence as any)) {
+        return Response.json({ error: "recurrence inválida" }, { status: 400 });
+    }
 
     // Auditoría: guarda la versión previa completa antes de tocarla
     await sql`
@@ -59,11 +78,21 @@ export async function PATCH(req: Request) {
         due_date          = ${body.due_date !== undefined ? (body.due_date as string | null) : asDateStr(task.due_date)},
         assigned_to       = ${body.assigned_to !== undefined ? (body.assigned_to as number | null) : task.assigned_to},
         status            = COALESCE(${(body.status as string | undefined) ?? null}, status),
+        recurrence        = ${body.recurrence !== undefined ? (body.recurrence as string | null) : task.recurrence},
         status_changed_by = ${statusChanged ? user.id : task.status_changed_by},
         status_changed_at = ${statusChanged ? new Date().toISOString() : asTimestamp(task.status_changed_at)},
         updated_at        = now()
       WHERE id = ${id}
       RETURNING *`;
+
+    // Tarea recurrente completada → nace la siguiente ocurrencia
+    if (statusChanged && updated.status === "done" && updated.recurrence) {
+        await sql`
+          INSERT INTO tasks (title, notes, due_date, assigned_to, recurrence, created_by)
+          VALUES (${updated.title}, ${updated.notes},
+                  ${nextDue(asDateStr(updated.due_date), updated.recurrence)},
+                  ${updated.assigned_to}, ${updated.recurrence}, ${updated.created_by})`;
+    }
 
     return Response.json(updated);
 }

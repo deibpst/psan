@@ -2,6 +2,7 @@ import { sql } from "../../lib/db";
 import { getUser } from "../../lib/auth";
 
 const STATUSES = ["pending", "in_progress", "done"] as const;
+export const RECURRENCES = ["daily", "weekly", "biweekly", "monthly"] as const;
 
 // GET /api/tasks?status=&assigned_to=&from=&to=
 export async function GET(req: Request) {
@@ -37,7 +38,7 @@ export async function GET(req: Request) {
     return Response.json(tasks);
 }
 
-// POST /api/tasks  { title, notes?, due_date?, assigned_to? }
+// POST /api/tasks  { title, notes?, due_date?, assigned_to?, recurrence? }
 export async function POST(req: Request) {
     const user = await getUser(req);
     if (!user) return Response.json({ error: "No autenticado" }, { status: 401 });
@@ -47,6 +48,7 @@ export async function POST(req: Request) {
         notes?: unknown;
         due_date?: unknown;
         assigned_to?: unknown;
+        recurrence?: unknown;
     } | null;
 
     if (!body || typeof body.title !== "string" || !body.title.trim()) {
@@ -58,14 +60,18 @@ export async function POST(req: Request) {
     if (body.assigned_to != null && !Number.isInteger(body.assigned_to)) {
         return Response.json({ error: "assigned_to inválido" }, { status: 400 });
     }
+    if (body.recurrence != null && !RECURRENCES.includes(body.recurrence as any)) {
+        return Response.json({ error: "recurrence inválida" }, { status: 400 });
+    }
 
     const [task] = await sql`
-      INSERT INTO tasks (title, notes, due_date, assigned_to, created_by)
+      INSERT INTO tasks (title, notes, due_date, assigned_to, recurrence, created_by)
       VALUES (
         ${body.title.trim()},
         ${typeof body.notes === "string" ? body.notes : null},
         ${(body.due_date as string | undefined) ?? null},
         ${(body.assigned_to as number | undefined) ?? null},
+        ${(body.recurrence as string | undefined) ?? null},
         ${user.id}
       )
       RETURNING *`;
