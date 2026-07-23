@@ -1,5 +1,5 @@
 import { api } from "/api.js";
-import { memberById, avatarHtml, urgency, duePart, todayStr, STATUS_LABEL } from "/app.js";
+import { avatarsHtml, urgency, duePart, todayStr, STATUS_LABEL } from "/app.js";
 import { esc } from "/views/tasks.js";
 
 const DOW = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"];
@@ -130,7 +130,7 @@ function dayListHtml(list) {
             <div class="card-title ${t.status === "done" ? "done" : ""}">${esc(t.title)}</div>
             <div class="card-meta"><span class="dot"></span><span>${STATUS_LABEL[t.status]}</span></div>
           </div>
-          ${avatarHtml(memberById(t.assigned_to), "avatar sm")}
+          ${avatarsHtml(t.assignees)}
         </article>`;
     }).join("");
 }

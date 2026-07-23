@@ -1,7 +1,7 @@
 import { api } from "/api.js";
 import {
-    MEMBERS, memberById, avatarHtml, urgency, duePart, todayStr,
-    fmtTime, STATUS_LABEL, openSheet, closeSheet, confirmar,
+    MEMBERS, memberById, avatarHtml, avatarsHtml, urgency, duePart, todayStr,
+    fmtTime, STATUS_LABEL, openSheet, closeSheet, confirmar, me,
 } from "/app.js";
 
 export async function renderTasks(section) {
@@ -69,7 +69,6 @@ function plusDays(ymd, n) {
 
 function cardHtml(t) {
     const u = urgency(t);
-    const assignee = memberById(t.assigned_to);
     const attribution = t.status_changed_by
         ? `${STATUS_LABEL[t.status]} · ${memberById(t.status_changed_by)?.name ?? "?"} · ${fmtTime(t.status_changed_at)}`
         : STATUS_LABEL[t.status];
@@ -87,7 +86,7 @@ function cardHtml(t) {
             <span class="chip">${attribution}</span>
           </div>
         </div>
-        ${avatarHtml(assignee, "avatar sm")}
+        ${avatarsHtml(t.assignees)}
         ${doneBtn}
       </article>`;
 }
@@ -103,7 +102,7 @@ const REC_LABEL = { "": "No se repite", daily: "Diario", weekly: "Semanal", biwe
 function taskSheet(task, section) {
     const isEdit = !!task;
     let status = task?.status ?? "pending";
-    let assignee = task?.assigned_to ?? null;
+    let assignees = task?.assignees ?? [];
     let recurrence = task?.recurrence ?? "";
 
     const el = openSheet(`
@@ -116,7 +115,8 @@ function taskSheet(task, section) {
         <input type="date" id="f-due" value="${duePart(task ?? {}) ?? ""}"></div>
       <div class="field"><label>Asignada a</label>
         <div class="member-row" id="f-assignee">
-          ${MEMBERS.map((m) => `<button type="button" data-id="${m.id}" class="${m.id === assignee ? "selected" : ""}">
+          ${MEMBERS.map((m) => `<button type="button" data-id="${m.id}" class="${assignees.includes(m.id) ? "selected" : ""}"
+              aria-pressed="${assignees.includes(m.id)}">
               ${avatarHtml(m)}<span>${m.name}</span></button>`).join("")}
         </div></div>
       <div class="field"><label>Se repite</label>
@@ -130,7 +130,7 @@ function taskSheet(task, section) {
             `<button type="button" data-s="${k}" class="${k === status ? "selected" : ""}">${v}</button>`).join("")}
         </div></div>
       <div class="sheet-actions">
-        ${isEdit ? `<button class="btn btn-danger" id="f-delete">Eliminar</button>` : ""}
+        ${isEdit && task.created_by === me.id ? `<button class="btn btn-danger" id="f-delete">Eliminar</button>` : ""}
         <button class="btn btn-secondary" id="f-cancel">Cancelar</button>
         <button class="btn" id="f-save">Guardar</button>
       </div>`);
@@ -139,9 +139,10 @@ function taskSheet(task, section) {
         const btn = e.target.closest("button");
         if (!btn) return;
         const id = Number(btn.dataset.id);
-        assignee = assignee === id ? null : id; // tap de nuevo = desasignar
-        for (const b of el.querySelectorAll("#f-assignee button"))
-            b.classList.toggle("selected", Number(b.dataset.id) === assignee);
+        assignees = assignees.includes(id) ? assignees.filter((a) => a !== id) : [...assignees, id];
+        const on = assignees.includes(id);
+        btn.classList.toggle("selected", on);
+        btn.setAttribute("aria-pressed", String(on));
     };
     el.querySelector("#f-rec").onclick = (e) => {
         const btn = e.target.closest("button");
@@ -159,7 +160,7 @@ function taskSheet(task, section) {
     };
     el.querySelector("#f-cancel").onclick = closeSheet;
 
-    if (isEdit) {
+    if (isEdit && task.created_by === me.id) {
         el.querySelector("#f-delete").onclick = async () => {
             if (!confirmar("¿Eliminar tarea?")) return;
             await api(`/api/tasks/${task.id}`, { method: "DELETE" });
@@ -177,7 +178,7 @@ function taskSheet(task, section) {
             title,
             notes: el.querySelector("#f-notes").value.trim() || null,
             due_date: el.querySelector("#f-due").value || null,
-            assigned_to: assignee,
+            assignees,
             recurrence: recurrence || null,
         };
         if (isEdit) {

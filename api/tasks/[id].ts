@@ -1,6 +1,6 @@
-import { sql } from "../../lib/db";
+import { sql, pgIntArray, normTask } from "../../lib/db";
 import { getUser } from "../../lib/auth";
-import { RECURRENCES } from "./index";
+import { RECURRENCES, isIdArray } from "./index";
 
 const STATUSES = ["pending", "in_progress", "done"] as const;
 
@@ -53,8 +53,8 @@ export async function PATCH(req: Request) {
         (typeof body.due_date !== "string" || isNaN(Date.parse(body.due_date)))) {
         return Response.json({ error: "due_date inválida (YYYY-MM-DD)" }, { status: 400 });
     }
-    if (body.assigned_to !== undefined && body.assigned_to !== null && !Number.isInteger(body.assigned_to)) {
-        return Response.json({ error: "assigned_to inválido" }, { status: 400 });
+    if (body.assignees !== undefined && !isIdArray(body.assignees)) {
+        return Response.json({ error: "assignees inválido" }, { status: 400 });
     }
     if (body.recurrence !== undefined && body.recurrence !== null && !RECURRENCES.includes(body.recurrence as any)) {
         return Response.json({ error: "recurrence inválida" }, { status: 400 });
@@ -76,7 +76,7 @@ export async function PATCH(req: Request) {
         title             = COALESCE(${(body.title as string | undefined)?.trim() ?? null}, title),
         notes             = ${body.notes !== undefined ? (body.notes as string | null) : task.notes},
         due_date          = ${body.due_date !== undefined ? (body.due_date as string | null) : asDateStr(task.due_date)},
-        assigned_to       = ${body.assigned_to !== undefined ? (body.assigned_to as number | null) : task.assigned_to},
+        assignees         = ${pgIntArray(body.assignees !== undefined ? (body.assignees as number[]) : task.assignees)}::int[],
         status            = COALESCE(${(body.status as string | undefined) ?? null}, status),
         recurrence        = ${body.recurrence !== undefined ? (body.recurrence as string | null) : task.recurrence},
         status_changed_by = ${statusChanged ? user.id : task.status_changed_by},
@@ -88,13 +88,13 @@ export async function PATCH(req: Request) {
     // Tarea recurrente completada → nace la siguiente ocurrencia
     if (statusChanged && updated.status === "done" && updated.recurrence) {
         await sql`
-          INSERT INTO tasks (title, notes, due_date, assigned_to, recurrence, created_by)
+          INSERT INTO tasks (title, notes, due_date, assignees, recurrence, created_by)
           VALUES (${updated.title}, ${updated.notes},
                   ${nextDue(asDateStr(updated.due_date), updated.recurrence)},
-                  ${updated.assigned_to}, ${updated.recurrence}, ${updated.created_by})`;
+                  ${pgIntArray(updated.assignees)}::int[], ${updated.recurrence}, ${updated.created_by})`;
     }
 
-    return Response.json(updated);
+    return Response.json(normTask(updated));
 }
 
 // DELETE /api/tasks/:id  (borrado suave)
@@ -107,6 +107,9 @@ export async function DELETE(req: Request) {
 
     const task = await findTask(id);
     if (!task) return Response.json({ error: "Tarea no encontrada" }, { status: 404 });
+    if (task.created_by !== user.id) {
+        return Response.json({ error: "Solo quien creó la tarea puede eliminarla" }, { status: 403 });
+    }
 
     await sql`
       INSERT INTO task_revisions (task_id, changed_by, previous)

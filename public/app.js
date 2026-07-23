@@ -50,6 +50,12 @@ export function avatarHtml(member, cls = "avatar") {
     return `<span class="${cls}" style="background:${member.color}" title="${member.name}">${member.name[0].toUpperCase()}</span>`;
 }
 
+// Varios asignados: círculos apilados con leve traslape
+export function avatarsHtml(ids, cls = "avatar sm") {
+    const html = (ids ?? []).map((id) => avatarHtml(memberById(id), cls)).join("");
+    return html ? `<span class="avatar-stack">${html}</span>` : "";
+}
+
 // ===== Sheet =====
 const backdrop = document.getElementById("sheet-backdrop");
 const sheetEl = document.getElementById("sheet");

@@ -6,6 +6,15 @@ if (!url) throw new Error("Falta DATABASE_URL / POSTGRES_URL");
 
 export const sql = new SQL(url);
 
+// Bun.sql no serializa arrays de JS a int[]; se pasa como literal '{1,2}'
+// (los valores ya vienen validados como enteros)
+export const pgIntArray = (a: number[] | Int32Array) => `{${Array.from(a).join(",")}}`;
+
+// …y devuelve int[] como Int32Array, que JSON.stringify rompe ({"0":1}).
+// Normalizar antes de responder.
+export const normTask = <T extends { assignees?: unknown }>(t: T) =>
+    ({ ...t, assignees: Array.from((t.assignees as number[]) ?? []) });
+
 export async function migrate() {
     await sql`
       CREATE TABLE IF NOT EXISTS users (
@@ -66,6 +75,12 @@ export async function migrate() {
       )`;
 
     await sql`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS recurrence TEXT`;
+
+    // Multi-asignación: assignees reemplaza a assigned_to (la columna vieja
+    // queda sin uso; migración no destructiva)
+    await sql`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS assignees INTEGER[] NOT NULL DEFAULT '{}'`;
+    await sql`UPDATE tasks SET assignees = ARRAY[assigned_to]
+              WHERE assigned_to IS NOT NULL AND assignees = '{}'`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS push_subscriptions (

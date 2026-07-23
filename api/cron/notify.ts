@@ -16,7 +16,7 @@ export async function GET(req: Request) {
              (SELECT count(*) FROM tasks t
               WHERE t.deleted_at IS NULL AND t.status != 'done'
                 AND t.due_date <= ${today}
-                AND (t.assigned_to = s.user_id OR t.assigned_to IS NULL)) AS due
+                AND (s.user_id = ANY(t.assignees) OR t.assignees = '{}')) AS due
       FROM push_subscriptions s`;
 
     let sent = 0, failed = 0;

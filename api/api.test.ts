@@ -10,6 +10,8 @@ import * as cronNotify from "./cron/notify";
 
 let userId: number;
 let cookie: string;
+let userId2: number;
+let cookie2: string;
 const cleanupTaskIds: number[] = [];
 let testListId: number;
 
@@ -33,6 +35,9 @@ beforeAll(async () => {
     const [u] = await sql`INSERT INTO users (name, pin_hash) VALUES (${name}, ${hash}) RETURNING id`;
     userId = u.id;
     cookie = `session=${await createSession(userId)}`;
+    const [u2] = await sql`INSERT INTO users (name, pin_hash) VALUES (${name + "-b"}, ${hash}) RETURNING id`;
+    userId2 = u2.id;
+    cookie2 = `session=${await createSession(userId2)}`;
 });
 
 afterAll(async () => {
@@ -44,8 +49,8 @@ afterAll(async () => {
         await sql`DELETE FROM list_items WHERE list_id = ${testListId}`;
         await sql`DELETE FROM lists WHERE id = ${testListId}`;
     }
-    await sql`DELETE FROM sessions WHERE user_id = ${userId}`;
-    await sql`DELETE FROM users WHERE id = ${userId}`;
+    await sql`DELETE FROM sessions WHERE user_id IN (${userId}, ${userId2})`;
+    await sql`DELETE FROM users WHERE id IN (${userId}, ${userId2})`;
     await sql.end();
 });
 
@@ -113,6 +118,46 @@ test("tasks: crear, listar, editar (revisión + atribución de status), borrar",
         req(`/api/tasks/${task.id}`, { method: "PATCH", body: JSON.stringify({ title: "x" }) })
     );
     expect(gone.status).toBe(404);
+});
+
+// ---------- permisos y multi-asignación ----------
+
+test("tasks: solo el creador puede eliminar", async () => {
+    const created = await json(await tasksIndex.POST(
+        req("/api/tasks", { method: "POST", body: JSON.stringify({ title: "mía" }) })
+    ));
+    cleanupTaskIds.push(created.id);
+
+    const ajeno = await taskById.DELETE(
+        req(`/api/tasks/${created.id}`, { method: "DELETE", headers: { cookie: cookie2 } })
+    );
+    expect(ajeno.status).toBe(403);
+
+    const propio = await taskById.DELETE(req(`/api/tasks/${created.id}`, { method: "DELETE" }));
+    expect(propio.status).toBe(200);
+});
+
+test("tasks: assignees múltiples — crear, filtrar, reemplazar", async () => {
+    const bad = await tasksIndex.POST(
+        req("/api/tasks", { method: "POST", body: JSON.stringify({ title: "x", assignees: ["a"] }) })
+    );
+    expect(bad.status).toBe(400);
+
+    const created = await json(await tasksIndex.POST(
+        req("/api/tasks", { method: "POST", body: JSON.stringify({ title: "dúo", assignees: [userId, userId2] }) })
+    ));
+    cleanupTaskIds.push(created.id);
+    expect(created.assignees).toEqual([userId, userId2]);
+
+    // filtro por miembro dentro del array
+    const filtered = await json(await tasksIndex.GET(req(`/api/tasks?assigned_to=${userId2}`)));
+    expect(filtered.some((t: any) => t.id === created.id)).toBe(true);
+
+    // PATCH reemplaza el array completo
+    const patched = await json(await taskById.PATCH(
+        req(`/api/tasks/${created.id}`, { method: "PATCH", body: JSON.stringify({ assignees: [userId2] }) })
+    ));
+    expect(patched.assignees).toEqual([userId2]);
 });
 
 // ---------- recurrence ----------
