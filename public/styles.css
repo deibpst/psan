@@ -13,9 +13,10 @@
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --t: 0.18s;
   /* esquinas anidadas: radio interno = externo − separación */
-  --r-lg: 24px;
-  --r: 20px;
-  --r-md: 12px;
+  /* radio uniforme en todo el landing y la app */
+  --r-lg: var(--r-sm);
+  --r: var(--r-sm);
+  --r-md: var(--r-sm);
   --r-sm: 8px;
   --space-1: 4px;
   --space-2: 8px;
@@ -572,24 +573,24 @@ a.btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: var(--space-2);
   padding: var(--space-6) var(--space-5);
   background: #fff;
   border-top: 1px solid var(--border);
-  font-size: 13.5px;
-  color: var(--text-dim);
 }
 
-.footer a {
-  color: var(--text-dim);
-  text-decoration: none;
-  transition: color var(--t) var(--ease);
-}
-
-.footer a:hover {
+.footer-gh {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--text);
-  text-decoration: underline;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity var(--t) var(--ease);
+}
+
+.footer-gh:hover {
+  opacity: 0.65;
 }
 
 /* ===== Página de acceso: mitad imagen, mitad formulario ===== */

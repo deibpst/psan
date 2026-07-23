@@ -87,6 +87,7 @@ export function setAddAction(fn) {
 const views = { tareas: renderTasks, calendario: renderCalendar, listas: renderLists };
 
 function route() {
+    if (!me) return; // sin sesión manda preAuthRoute, no este router
     const name = location.hash.slice(1) || "tareas";
     if (!views[name]) { location.hash = "tareas"; return; }
     for (const el of document.querySelectorAll("#main > section")) el.hidden = true;
