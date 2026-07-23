@@ -143,6 +143,12 @@ select {
   border-radius: 8px;
 }
 
+/* oscuro: ícono invertido (marca clara sobre fondo negro) */
+:root[data-theme="dark"] .header-brand,
+:root[data-theme="dark"] .login-logo {
+  filter: invert(1);
+}
+
 .header-actions {
   display: flex;
   align-items: center;

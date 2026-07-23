@@ -103,10 +103,28 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // ===== Tema =====
+// Favicon acorde al tema: claro = original, oscuro = invertido (canvas, sin assets extra)
+const faviconLink = document.querySelector('link[rel="icon"]');
+function updateFavicon(theme) {
+    if (theme !== "dark") { faviconLink.href = "/psan.ico"; return; }
+    const img = new Image();
+    img.src = "/icons/icon-192.png";
+    img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = c.height = 64;
+        const ctx = c.getContext("2d");
+        ctx.filter = "invert(1)";
+        ctx.drawImage(img, 0, 0, 64, 64);
+        faviconLink.href = c.toDataURL();
+    };
+}
+updateFavicon(document.documentElement.dataset.theme);
+
 document.getElementById("theme-toggle").addEventListener("click", () => {
     const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     localStorage.setItem("theme", next);
+    updateFavicon(next);
 });
 
 // ===== Sesión =====
