@@ -12,8 +12,8 @@
 </head>
 <body>
 
-  <!-- Landing + login -->
-  <section id="view-login" hidden>
+  <!-- Landing -->
+  <section id="view-landing" hidden>
 
     <nav class="land-nav" aria-label="psan">
       <img src="/icons/icon-192.png" alt="" width="32" height="32">
@@ -24,7 +24,9 @@
       <div class="hero-content">
         <h1>La casa, en orden.</h1>
         <p>Tareas, calendario y listas para la familia — con avisos al momento.</p>
-        <a class="btn hero-cta" href="#entrar">Entrar</a>
+        <p class="hero-more">Cada quien entra con su PIN, ve lo suyo y lo de todos,
+          y nada se pierde: quién creó cada tarea, quién la hizo y cuándo.</p>
+        <a class="btn-hero" href="#login">Entrar</a>
       </div>
       <svg class="hero-hint" viewBox="0 0 24 24" width="28" height="28" fill="none"
            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -33,6 +35,8 @@
 
     <section class="features" aria-label="Qué hace psan">
       <h2>Todo lo de la casa, en un solo lugar</h2>
+      <p class="features-intro">Sin cuentas, sin correos, sin configurar nada:
+        abre, elige quién eres y listo.</p>
       <div class="features-grid">
         <article class="feature">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor"
@@ -62,21 +66,58 @@
       <p class="features-note">Y avisos en tu teléfono cuando algo se asigna, se hace o vence.</p>
     </section>
 
-    <section id="entrar" class="login-section">
-      <div class="login-box">
-        <img class="login-logo" src="/icons/icon-192.png" alt="psan" width="88" height="88">
-        <p class="login-sub">¿Quién eres?</p>
-        <div id="login-names" class="login-names"></div>
-        <div id="login-pin" hidden>
-          <p id="pin-user" class="pin-user"></p>
-          <div id="pin-dots" class="pin-dots" aria-live="polite"></div>
-          <p id="pin-error" class="pin-error" role="alert"></p>
-          <div id="pin-pad" class="pin-pad"></div>
-          <button id="pin-back" class="btn-ghost" type="button">← Cambiar usuario</button>
-        </div>
+    <section class="product" aria-label="Más sobre psan">
+      <div class="product-content">
+        <h2>Hecha para el día a día</h2>
+        <dl class="product-list">
+          <div><dt>Semáforo de urgencia</dt>
+            <dd>Rojo si vence hoy o ya venció, amarillo si viene pronto, azul si hay tiempo. Un vistazo basta.</dd></div>
+          <div><dt>Avisos al momento</dt>
+            <dd>Te llega una notificación cuando te asignan algo, cuando alguien lo termina y cuando algo vence.</dd></div>
+          <div><dt>Tareas recurrentes</dt>
+            <dd>Diario, semanal, quincenal o mensual: al completarse, la siguiente se programa sola.</dd></div>
+          <div><dt>Instalable como app</dt>
+            <dd>Agrégala a tu pantalla de inicio y funciona como una app más, en iPhone y Android.</dd></div>
+        </dl>
+        <a class="btn-hero" href="#login">Entrar</a>
       </div>
-      <p class="land-foot">psan — hecho en casa</p>
     </section>
+
+    <footer class="footer">
+      <img src="/icons/icon-192.png" alt="" width="20" height="20">
+      <span>psan</span>
+      <span aria-hidden="true">·</span>
+      <a href="https://github.com/deibpst" rel="noopener">github.com/deibpst</a>
+    </footer>
+  </section>
+
+  <!-- Login (página aparte, #login) -->
+  <section id="view-loginpage" class="split" hidden>
+    <div class="split-img" role="img" aria-label=""></div>
+    <div class="split-form">
+      <a class="split-back" href="#">‹ Volver</a>
+      <div class="split-brand">
+        <img src="/icons/icon-192.png" alt="" width="40" height="40">
+        <span class="wordmark">psan</span>
+      </div>
+      <label class="split-label" for="login-user">¿Quién eres?</label>
+      <select id="login-user">
+        <option value="" selected disabled>Elige tu nombre</option>
+      </select>
+      <div id="pin-boxes" class="pin-boxes" hidden>
+        <input inputmode="numeric" autocomplete="off" maxlength="1" aria-label="Dígito 1 del PIN">
+        <input inputmode="numeric" autocomplete="off" maxlength="1" aria-label="Dígito 2 del PIN">
+        <input inputmode="numeric" autocomplete="off" maxlength="1" aria-label="Dígito 3 del PIN">
+        <input inputmode="numeric" autocomplete="off" maxlength="1" aria-label="Dígito 4 del PIN">
+      </div>
+      <p id="pin-error" class="pin-error" role="alert"></p>
+      <button id="login-go" class="login-go" type="button" hidden aria-label="Entrar">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14m-6-6 6 6-6 6"/>
+        </svg>
+      </button>
+    </div>
   </section>
 
   <!-- App -->

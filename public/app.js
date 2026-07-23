@@ -110,18 +110,29 @@ document.getElementById("logout").addEventListener("click", async () => {
 
 export function enterApp(user) {
     me = user;
-    document.getElementById("view-login").hidden = true;
+    document.getElementById("view-landing").hidden = true;
+    document.getElementById("view-loginpage").hidden = true;
     document.getElementById("app").hidden = false;
     const m = memberById(user.id);
     document.getElementById("me-avatar").outerHTML = avatarHtml(m ?? { name: user.name, color: "var(--accent)" });
     route();
 }
 
+// pre-auth: landing por defecto, #login = página de acceso
+function preAuthRoute() {
+    if (me) return;
+    const login = location.hash === "#login";
+    document.getElementById("view-landing").hidden = login;
+    document.getElementById("view-loginpage").hidden = !login;
+}
+
 // arranque
 try {
     enterApp(await api("/api/me"));
 } catch {
-    renderLogin(document.getElementById("view-login"));
+    renderLogin();
+    preAuthRoute();
+    window.addEventListener("hashchange", preAuthRoute);
 }
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
