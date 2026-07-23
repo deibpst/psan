@@ -12,26 +12,80 @@
 </head>
 <body>
 
-  <!-- Login -->
+  <!-- Landing + login -->
   <section id="view-login" hidden>
-    <div class="login-box">
-      <img class="login-logo" src="/icons/icon-192.png" alt="psan" width="88" height="88">
-      <p class="login-sub">¿Quién eres?</p>
-      <div id="login-names" class="login-names"></div>
-      <div id="login-pin" hidden>
-        <p id="pin-user" class="pin-user"></p>
-        <div id="pin-dots" class="pin-dots" aria-live="polite"></div>
-        <p id="pin-error" class="pin-error" role="alert"></p>
-        <div id="pin-pad" class="pin-pad"></div>
-        <button id="pin-back" class="btn-ghost" type="button">← Cambiar usuario</button>
+
+    <nav class="land-nav" aria-label="psan">
+      <img src="/icons/icon-192.png" alt="" width="32" height="32">
+      <span class="wordmark">psan</span>
+    </nav>
+
+    <header class="hero">
+      <div class="hero-content">
+        <h1>La casa, en orden.</h1>
+        <p>Tareas, calendario y listas para la familia — con avisos al momento.</p>
+        <a class="btn hero-cta" href="#entrar">Entrar</a>
       </div>
-    </div>
+      <svg class="hero-hint" viewBox="0 0 24 24" width="28" height="28" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </header>
+
+    <section class="features" aria-label="Qué hace psan">
+      <h2>Todo lo de la casa, en un solo lugar</h2>
+      <div class="features-grid">
+        <article class="feature">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          <h3>Tareas</h3>
+          <p>Asígnalas a quien sea y su urgencia se ve de color.</p>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          <h3>Calendario</h3>
+          <p>La semana o el mes de la familia, de un vistazo.</p>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+          </svg>
+          <h3>Listas</h3>
+          <p>Súper y encargos compartidos, palomeables desde cualquier teléfono.</p>
+        </article>
+      </div>
+      <p class="features-note">Y avisos en tu teléfono cuando algo se asigna, se hace o vence.</p>
+    </section>
+
+    <section id="entrar" class="login-section">
+      <div class="login-box">
+        <img class="login-logo" src="/icons/icon-192.png" alt="psan" width="88" height="88">
+        <p class="login-sub">¿Quién eres?</p>
+        <div id="login-names" class="login-names"></div>
+        <div id="login-pin" hidden>
+          <p id="pin-user" class="pin-user"></p>
+          <div id="pin-dots" class="pin-dots" aria-live="polite"></div>
+          <p id="pin-error" class="pin-error" role="alert"></p>
+          <div id="pin-pad" class="pin-pad"></div>
+          <button id="pin-back" class="btn-ghost" type="button">← Cambiar usuario</button>
+        </div>
+      </div>
+      <p class="land-foot">psan — hecho en casa</p>
+    </section>
   </section>
 
   <!-- App -->
   <div id="app" hidden>
     <header class="header">
-      <img class="header-brand" src="/icons/icon-192.png" alt="psan" width="36" height="36">
+      <span class="brand-lockup">
+        <img class="header-brand" src="/icons/icon-192.png" alt="" width="32" height="32">
+        <span class="wordmark">psan</span>
+      </span>
       <div class="header-actions">
         <span id="me-avatar" class="avatar" aria-hidden="true"></span>
         <button id="add-btn" class="icon-btn" type="button" hidden aria-label="Agregar">

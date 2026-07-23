@@ -272,32 +272,231 @@ select {
   color: var(--on-accent);
 }
 
-/* ===== Login: flor difuminada + vidrio oscuro, texto blanco ===== */
-#view-login {
+/* ===== Landing ===== */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+a.btn {
+  display: inline-grid;
+  place-items: center;
+  text-decoration: none;
+}
+
+.wordmark {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: 19px;
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text);
+}
+
+.land-nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  padding-top: calc(var(--space-4) + env(safe-area-inset-top));
+  color: #fff;
+}
+
+.land-nav img {
+  border-radius: var(--r-sm);
+}
+
+/* héroe: flor apenas difuminada, texto blanco sólido */
+.hero {
   position: relative;
   overflow: hidden;
   display: grid;
   place-items: center;
   min-height: 100dvh;
-  padding: var(--space-4);
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
+  color: #fff;
 }
 
-#view-login::before {
+.hero::before {
   content: "";
   position: absolute;
   inset: 0;
   background: url("/flwr.jpg") center / cover no-repeat;
-  filter: blur(4px) brightness(0.6) saturate(1.15);
-  transform: scale(1.15);
-  /* oculta bordes del blur */
+  filter: blur(2px) brightness(0.65) saturate(1.1);
+  transform: scale(1.06);
 }
 
-#view-login::after {
-  /* velo para garantizar contraste del texto blanco, pase lo que pase en la foto */
+.hero::after {
+  /* velo: el contraste del blanco lo garantiza esto, no la foto */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(15 23 42 / 0.30), rgb(15 23 42 / 0.45));
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+}
+
+.hero h1 {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.hero p {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.88);
+  margin: 0;
+  max-width: 420px;
+  text-wrap: balance;
+}
+
+.hero-cta {
+  margin-top: var(--space-2);
+  min-width: 180px;
+}
+
+.hero-hint {
+  position: absolute;
+  bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
+  z-index: 1;
+  color: rgb(255 255 255 / 0.7);
+  animation: hint 1.8s var(--ease) infinite;
+}
+
+@keyframes hint {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+/* características: blanco, aire, tres tarjetas */
+.features {
+  padding: calc(var(--space-6) * 2) var(--space-5);
+  background: #fff;
+  text-align: center;
+}
+
+.features h2 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0 auto var(--space-6);
+  max-width: 480px;
+  text-wrap: balance;
+}
+
+.features-grid {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.feature {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--r);
+  background: var(--glass);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
+}
+
+.feature:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.feature svg {
+  color: var(--accent);
+}
+
+.feature h3 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.feature p {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  margin: 0;
+  max-width: 260px;
+}
+
+.features-note {
+  margin: var(--space-6) auto 0;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+/* sección de acceso: la flor de nuevo, más difusa */
+.login-section {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-5);
+  min-height: 100dvh;
+  padding: var(--space-6) var(--space-4);
+}
+
+.login-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/flwr.jpg") center / cover no-repeat;
+  filter: blur(12px) brightness(0.6) saturate(1.15);
+  transform: scale(1.1);
+}
+
+.login-section::after {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgb(15 23 42 / 0.35), rgb(15 23 42 / 0.55));
+}
+
+.land-foot {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 12.5px;
+  color: rgb(255 255 255 / 0.6);
 }
 
 .login-box {
@@ -307,6 +506,20 @@ select {
   max-width: 340px;
   text-align: center;
   color: #fff;
+}
+
+@media (min-width: 768px) {
+  .hero h1 {
+    font-size: 52px;
+  }
+
+  .hero p {
+    font-size: 18px;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .login-logo {
