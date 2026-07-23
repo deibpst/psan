@@ -76,6 +76,13 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet
 // confirm nativo con texto en español; suficiente y accesible
 export const confirmar = (msg) => window.confirm(msg);
 
+// ===== Botón + de la barra (sin FAB, patrón nativo) =====
+const addBtn = document.getElementById("add-btn");
+export function setAddAction(fn) {
+    addBtn.hidden = !fn;
+    addBtn.onclick = fn ?? null;
+}
+
 // ===== Router =====
 const views = { tareas: renderTasks, calendario: renderCalendar, listas: renderLists };
 

@@ -1,5 +1,5 @@
 import { api } from "/api.js";
-import { avatarsHtml, urgency, duePart, todayStr, STATUS_LABEL } from "/app.js";
+import { avatarsHtml, urgency, duePart, todayStr, STATUS_LABEL, setAddAction } from "/app.js";
 import { esc } from "/views/tasks.js";
 
 const DOW = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"];
@@ -44,6 +44,7 @@ export async function renderCalendar(section) {
       ${mode === "week" ? weekHtml(byDay) : monthHtml(byDay)}
       <div id="cal-day-list">${dayListHtml(byDay[selected] ?? [])}</div>`;
 
+    setAddAction(null);
     section.querySelector("#cal-prev").onclick = () => { move(-1); renderCalendar(section); };
     section.querySelector("#cal-next").onclick = () => { move(1); renderCalendar(section); };
     section.querySelector("#cal-today").onclick = () => {
@@ -123,7 +124,7 @@ function monthHtml(byDay) {
 
 function dayListHtml(list) {
     if (!list.length) return `<div class="state">Sin tareas este día</div>`;
-    return list.map((t) => {
+    return `<div class="group">` + list.map((t) => {
         const u = urgency(t);
         return `<article class="card" style="--u:${u.color}">
           <div class="card-body">
@@ -132,5 +133,5 @@ function dayListHtml(list) {
           </div>
           ${avatarsHtml(t.assignees)}
         </article>`;
-    }).join("");
+    }).join("") + `</div>`;
 }

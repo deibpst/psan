@@ -1,5 +1,5 @@
 import { api } from "/api.js";
-import { openSheet, closeSheet, confirmar } from "/app.js";
+import { openSheet, closeSheet, confirmar, setAddAction } from "/app.js";
 import { esc } from "/views/tasks.js";
 
 let openListId = null; // lista abierta; null = índice de listas
@@ -28,35 +28,40 @@ export async function renderLists(section) {
             <span class="count">${done}/${l.items.length}</span>
           </div>`;
     }).join("");
-    if (!html) html = `<div class="state">Sin listas todavía.<br>Crea una con el botón +</div>`;
-    html += `<button class="fab" id="fab-list" aria-label="Nueva lista">+</button>`;
-    section.innerHTML = html;
+    html = html
+        ? `<div class="group">${html}</div>`
+        : `<div class="state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                 stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            Sin listas todavía.<br>Toca + para crear una.</div>`;
+    section.innerHTML = `<h1 class="large-title">Listas</h1>` + html;
 
-    section.querySelector("#fab-list").onclick = () => {
-        const el = openSheet(`
-          <h2>Nueva lista</h2>
-          <div class="field"><label for="l-name">Nombre</label>
-            <input type="text" id="l-name" placeholder="Súper, Farmacia…"></div>
-          <div class="sheet-actions">
-            <button class="btn btn-secondary" id="l-cancel">Cancelar</button>
-            <button class="btn" id="l-save">Crear</button>
-          </div>`);
-        el.querySelector("#l-cancel").onclick = closeSheet;
-        el.querySelector("#l-save").onclick = async () => {
-            const name = el.querySelector("#l-name").value.trim();
-            if (!name) return;
-            const created = await api("/api/lists", { method: "POST", body: { name } });
-            closeSheet();
-            openListId = created.id;
-            renderLists(section);
-        };
-    };
+    setAddAction(() => newListSheet(section));
 
     section.onclick = (e) => {
-        if (e.target.closest("#fab-list")) return;
         const card = e.target.closest("[data-list]");
         if (!card) return;
         openListId = Number(card.dataset.list);
+        renderLists(section);
+    };
+}
+
+function newListSheet(section) {
+    const el = openSheet(`
+      <h2>Nueva lista</h2>
+      <div class="field"><label for="l-name">Nombre</label>
+        <input type="text" id="l-name" placeholder="Súper, Farmacia…"></div>
+      <div class="sheet-actions">
+        <button class="btn btn-secondary" id="l-cancel">Cancelar</button>
+        <button class="btn" id="l-save">Crear</button>
+      </div>`);
+    el.querySelector("#l-cancel").onclick = closeSheet;
+    el.querySelector("#l-save").onclick = async () => {
+        const name = el.querySelector("#l-name").value.trim();
+        if (!name) return;
+        const created = await api("/api/lists", { method: "POST", body: { name } });
+        closeSheet();
+        openListId = created.id;
         renderLists(section);
     };
 }
@@ -70,14 +75,15 @@ function renderItems(section, list) {
         </div>`).join("");
 
     section.innerHTML = `
-      <button class="btn-ghost" id="back">← Listas</button>
-      <h2 style="margin:var(--space-2) 0 var(--space-3)">${esc(list.name)}</h2>
-      ${rows || `<div class="state">Lista vacía — agrega algo abajo</div>`}
+      <button class="btn-ghost" id="back">‹ Listas</button>
+      <h1 class="large-title">${esc(list.name)}</h1>
+      ${rows ? `<div class="group">${rows}</div>` : `<div class="state">Lista vacía — agrega algo abajo</div>`}
       <form class="quickadd" id="quickadd">
         <input type="text" id="new-item" placeholder="Agregar…" aria-label="Nuevo elemento">
         <button class="btn" type="submit">+</button>
       </form>`;
 
+    setAddAction(() => section.querySelector("#new-item").focus());
     section.querySelector("#back").onclick = () => { openListId = null; renderLists(section); };
 
     section.querySelector("#quickadd").onsubmit = async (e) => {

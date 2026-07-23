@@ -1,7 +1,7 @@
 import { api } from "/api.js";
 import {
     MEMBERS, memberById, avatarHtml, avatarsHtml, urgency, duePart, todayStr,
-    fmtTime, STATUS_LABEL, openSheet, closeSheet, confirmar, me,
+    fmtTime, STATUS_LABEL, openSheet, closeSheet, confirmar, me, setAddAction,
 } from "/app.js";
 
 export async function renderTasks(section) {
@@ -38,18 +38,19 @@ export async function renderTasks(section) {
     let html = "";
     for (const [name, list] of Object.entries(groups)) {
         if (!list.length) continue;
-        html += `<h2 class="group-title">${name}</h2>` + list.map(cardHtml).join("");
+        html += `<h2 class="group-title">${name}</h2><div class="group">${list.map(cardHtml).join("")}</div>`;
     }
-    if (!html) html = `<div class="state">Sin tareas pendientes 🎉<br>Crea una con el botón +</div>`;
+    if (!html) html = `<div class="state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Sin tareas pendientes.<br>Toca + para crear una.</div>`;
     if (hechas.length) {
-        html += `<details class="hechas"><summary>Hechas (${hechas.length})</summary>${hechas.map(cardHtml).join("")}</details>`;
+        html += `<details class="hechas"><summary>Hechas (${hechas.length})</summary><div class="group">${hechas.map(cardHtml).join("")}</div></details>`;
     }
-    html += `<button class="fab" id="fab-task" aria-label="Nueva tarea">+</button>`;
-    section.innerHTML = html;
+    section.innerHTML = `<h1 class="large-title">Tareas</h1>` + html;
 
-    section.querySelector("#fab-task").onclick = () => taskSheet(null, section);
+    setAddAction(() => taskSheet(null, section));
     section.onclick = (e) => {
-        if (e.target.closest("#fab-task")) return;
         const doneBtn = e.target.closest("[data-done]");
         if (doneBtn) {
             e.stopPropagation();
