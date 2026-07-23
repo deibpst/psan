@@ -601,7 +601,25 @@ a.btn {
 }
 
 .split-img {
+  position: relative;
   background: url("/flwr3.jpg") center / cover no-repeat;
+}
+
+.split-tagline {
+  position: absolute;
+  top: var(--space-6);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0 var(--space-5);
+  text-align: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 14px rgb(0 0 0 / 0.45);
+  text-wrap: balance;
 }
 
 .split-form {
@@ -651,10 +669,14 @@ a.btn {
   width: 100%;
   max-width: 280px;
   min-height: var(--tap);
-  padding: var(--space-2) var(--space-3);
+  /* flecha propia: su margen derecho (space-3) iguala el padding izq. del texto */
+  padding: var(--space-2) calc(var(--space-3) * 2 + 18px) var(--space-2) var(--space-3);
+  appearance: none;
+  -webkit-appearance: none;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  background: #fff;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230F172A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right var(--space-3) center;
+  background-size: 18px;
   color: var(--text);
   font-size: 16px;
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
@@ -700,7 +722,7 @@ a.btn {
   width: 56px;
   height: 56px;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--r-sm);
   background: var(--primary);
   color: #fff;
   box-shadow: 0 4px 16px rgb(15 23 42 / 0.25);
