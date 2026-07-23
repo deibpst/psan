@@ -139,7 +139,7 @@ test("tasks: solo el creador puede eliminar", async () => {
     expect(propio.status).toBe(200);
 });
 
-test("tasks: assignees múltiples — crear, filtrar, reemplazar", async () => {
+test("tasks: assignees múltiples: crear, filtrar, reemplazar", async () => {
     const bad = await tasksIndex.POST(
         req("/api/tasks", { method: "POST", body: JSON.stringify({ title: "x", assignees: ["a"] }) })
     );

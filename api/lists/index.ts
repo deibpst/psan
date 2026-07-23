@@ -1,7 +1,7 @@
 import { sql } from "../../lib/db";
 import { getUser } from "../../lib/auth";
 
-// GET /api/lists — listas con sus items
+// GET /api/lists: listas con sus items
 export async function GET(req: Request) {
     const user = await getUser(req);
     if (!user) return Response.json({ error: "No autenticado" }, { status: 401 });

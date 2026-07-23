@@ -77,7 +77,7 @@ function renderItems(section, list) {
     section.innerHTML = `
       <button class="btn-ghost" id="back">‹ Listas</button>
       <h1 class="large-title">${esc(list.name)}</h1>
-      ${rows ? `<div class="group">${rows}</div>` : `<div class="state">Lista vacía — agrega algo abajo</div>`}
+      ${rows ? `<div class="group">${rows}</div>` : `<div class="state">Lista vacía, agrega algo abajo</div>`}
       <form class="quickadd" id="quickadd">
         <input type="text" id="new-item" placeholder="Agregar…" aria-label="Nuevo elemento">
         <button class="btn" type="submit">+</button>

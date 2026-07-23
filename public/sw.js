@@ -1,5 +1,5 @@
 // Cache del app shell: estáticos cache-first, /api siempre red
-const VERSION = "psan-v14";
+const VERSION = "psan-v15";
 const SHELL = [
     "/", "/styles.css", "/app.js", "/api.js",
     "/views/login.js", "/views/tasks.js", "/views/calendar.js", "/views/lists.js",
@@ -45,7 +45,7 @@ self.addEventListener("push", (e) => {
             const tasks = await fetch("/api/tasks", { credentials: "same-origin" }).then((r) => r.json());
             const n = tasks.filter((t) =>
                 t.status !== "done" && t.due_date && t.due_date.slice(0, 10) <= hoy).length;
-            // n=0: otro dispositivo ya recogió el aviso — mensaje genérico
+            // n=0: otro dispositivo ya recogió el aviso, mensaje genérico
             await notify(n === 0 ? "Tienes actividad nueva" : n === 1 ? "1 tarea por vencer" : `${n} tareas por vencer`);
         } catch {
             await notify("Tienes actividad nueva");

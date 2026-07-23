@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         return Response.json({ error: "Faltan name o pin" }, { status: 400 });
     }
 
-    // ponytail: rate limit por nombre, no por IP — suficiente para 3 usuarios conocidos
+    // ponytail: rate limit por nombre, no por IP, suficiente para 3 usuarios conocidos
     const [{ count }] = await sql`
       SELECT count(*)::int AS count FROM login_attempts
       WHERE name = ${name} AND failed_at > now() - ${WINDOW_MINUTES} * interval '1 minute'`;

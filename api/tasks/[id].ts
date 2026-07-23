@@ -9,7 +9,7 @@ const STEP_DAYS = { daily: 1, weekly: 7, biweekly: 14 } as const;
 
 // Siguiente vencimiento estrictamente futuro (una tarea hecha tarde no
 // reaparece ya vencida). Base: due_date original, o hoy si no había.
-// ponytail: monthly usa setMonth — 31 ene + 1 mes = 3 mar; aceptado.
+// ponytail: monthly usa setMonth (31 ene + 1 mes = 3 mar); aceptado.
 function nextDue(due: string | null, recurrence: string): string {
     const today = new Date().toISOString().slice(0, 10);
     const d = new Date((due ?? today) + "T12:00:00Z");

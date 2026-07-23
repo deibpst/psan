@@ -1,7 +1,7 @@
 import { sql } from "../../lib/db";
 import { sendPush } from "../../lib/push";
 
-// GET /api/cron/notify — Vercel Cron diario. Avisa a cada suscriptor si tiene
+// GET /api/cron/notify: Vercel Cron diario. Avisa a cada suscriptor si tiene
 // tareas vencidas o que vencen hoy (asignadas a él o sin asignar).
 export async function GET(req: Request) {
     if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {

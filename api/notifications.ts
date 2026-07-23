@@ -1,7 +1,7 @@
 import { sql } from "../lib/db";
 import { getUser } from "../lib/auth";
 
-// GET /api/notifications — entrega y marca los avisos pendientes del usuario.
+// GET /api/notifications: entrega y marca los avisos pendientes del usuario.
 // UPDATE…RETURNING: una sola pasada, sin carreras entre dispositivos.
 export async function GET(req: Request) {
     const user = await getUser(req);
