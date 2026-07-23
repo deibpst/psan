@@ -1,19 +1,16 @@
 {
-  "name": "server",
-  "module": "index.ts",
+  "name": "psan",
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest",
-    "@types/express": "^5.0.6"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
-  "dependencies": {
-    "express": "^5.2.1"
-  },
   "scripts": {
-    "dev": "bun --hot server/index.ts"
+    "dev": "bunx vercel dev",
+    "seed": "bun lib/seed.ts",
+    "test": "bun --env-file=.env.local test"
   }
 }

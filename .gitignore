@@ -38,5 +38,13 @@ psan.sqlite*
 
 # AI
 CLAUDE.md
+.claude/
+.agents/
+skills-lock.json
+
+# seed con PINs reales de la familia
+lib/seed.ts
 
 cookies.txt
+.vercel
+.env*
