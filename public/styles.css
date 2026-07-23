@@ -287,7 +287,7 @@ select {
   position: absolute;
   inset: 0;
   background: url("/flwr.jpg") center / cover no-repeat;
-  filter: blur(24px) brightness(0.6) saturate(1.15);
+  filter: blur(8px) brightness(0.6) saturate(1.15);
   transform: scale(1.15);
   /* oculta bordes del blur */
 }
