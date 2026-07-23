@@ -97,11 +97,7 @@ body::after {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
-.header-brand {
-  font-family: var(--font-hand);
-  font-weight: 400; font-size: 1.9rem; line-height: 1;
-  color: var(--accent-text);
-}
+.header-brand { display: block; width: 36px; height: 36px; border-radius: 10px; }
 .header-actions { display: flex; align-items: center; gap: var(--space-2); }
 
 .icon-btn {
@@ -174,6 +170,8 @@ body::after {
   font-size: .72rem; font-weight: 500;
 }
 .tabbar a svg {
+  /* content-box: el padding no se come los 24px del ícono (border-box global lo colapsaba) */
+  box-sizing: content-box;
   padding: 3px 14px; border-radius: 999px;
   transition: background .4s var(--ease);
 }
@@ -209,10 +207,10 @@ body::after {
   to   { transform: translateY(10px); }
 }
 .login-box { position: relative; z-index: 1; width: 100%; max-width: 320px; text-align: center; }
-.login-title {
-  font-weight: 700; font-size: 3.5rem; letter-spacing: -0.025em; line-height: 1;
-  color: var(--text);
-  margin: 0 0 var(--space-1);
+.login-logo {
+  width: 88px; height: 88px; border-radius: 24px;
+  margin: 0 auto var(--space-3);
+  box-shadow: var(--shadow);
 }
 .login-sub {
   font-family: var(--font-hand); font-size: 1.6rem; line-height: 1;
