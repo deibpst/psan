@@ -35,7 +35,8 @@ export function urgency(task) {
     if (task.status === "done") return { color: "var(--u-green)", label: "Hecha" };
     const due = duePart(task);
     if (!due) return { color: "var(--u-blue-faint)", label: "Sin fecha" };
-    const days = Math.ceil((new Date(due + "T23:59:59") - Date.now()) / 86400000);
+    // diferencia de días de calendario (ambos a medianoche UTC = resta exacta, sin líos de zona)
+    const days = Math.round((Date.parse(due + "T00:00:00Z") - Date.parse(todayStr() + "T00:00:00Z")) / 86400000);
     if (days < 0) return { color: "var(--u-red)", label: "Vencida" };
     if (days <= 2) return { color: "var(--u-red)", label: days === 0 ? "Hoy" : days === 1 ? "Mañana" : "2 días" };
     if (days < 4) return { color: "var(--u-yellow)", label: `${days} días` };
