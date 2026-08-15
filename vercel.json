@@ -1,4 +1,12 @@
 {
   "bunVersion": "1.x",
-  "crons": [{ "path": "/api/cron/notify", "schedule": "0 14 * * *" }]
+  "crons": [
+    {
+      "path": "/api/cron/notify",
+      "schedule": "0 14 * * *"
+    }
+  ],
+  "env": {
+    "SESSION_INACTIVITY_TIMEOUT_MINUTES": "10"
+  }
 }

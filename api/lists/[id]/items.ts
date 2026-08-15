@@ -1,5 +1,5 @@
 import { sql } from "../../../lib/db";
-import { getUser } from "../../../lib/auth";
+import { getUser, touchSession, readSessionToken } from "../../../lib/auth";
 
 function listId(req: Request): number | null {
     // /api/lists/:id/items → penúltimo segmento
@@ -17,6 +17,7 @@ async function listExists(id: number): Promise<boolean> {
 export async function POST(req: Request) {
     const user = await getUser(req);
     if (!user) return Response.json({ error: "No autenticado" }, { status: 401 });
+    await touchSession(readSessionToken(req));
 
     const id = listId(req);
     if (!id) return Response.json({ error: "id inválido" }, { status: 400 });
@@ -39,6 +40,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
     const user = await getUser(req);
     if (!user) return Response.json({ error: "No autenticado" }, { status: 401 });
+    await touchSession(readSessionToken(req));
 
     const id = listId(req);
     if (!id) return Response.json({ error: "id inválido" }, { status: 400 });
@@ -74,6 +76,7 @@ export async function PATCH(req: Request) {
 export async function DELETE(req: Request) {
     const user = await getUser(req);
     if (!user) return Response.json({ error: "No autenticado" }, { status: 401 });
+    await touchSession(readSessionToken(req));
 
     const id = listId(req);
     if (!id) return Response.json({ error: "id inválido" }, { status: 400 });

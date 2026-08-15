@@ -1,5 +1,5 @@
 import { sql, pgIntArray, normTask } from "../../lib/db";
-import { getUser } from "../../lib/auth";
+import { getUser, touchSession, readSessionToken } from "../../lib/auth";
 import { notifyUsers } from "../../lib/push";
 
 const STATUSES = ["pending", "in_progress", "done"] as const;
@@ -11,6 +11,7 @@ export const isIdArray = (v: unknown): v is number[] =>
 export async function GET(req: Request) {
     const user = await getUser(req);
     if (!user) return Response.json({ error: "No autenticado" }, { status: 401 });
+    await touchSession(readSessionToken(req));
 
     const p = new URL(req.url).searchParams;
     const status = p.get("status");
@@ -39,6 +40,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     const user = await getUser(req);
     if (!user) return Response.json({ error: "No autenticado" }, { status: 401 });
+    await touchSession(readSessionToken(req));
 
     const body = (await req.json().catch(() => null)) as {
         title?: unknown;

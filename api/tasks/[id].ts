@@ -1,5 +1,5 @@
 import { sql, pgIntArray, normTask } from "../../lib/db";
-import { getUser } from "../../lib/auth";
+import { getUser, touchSession, readSessionToken } from "../../lib/auth";
 import { notifyUsers } from "../../lib/push";
 import { RECURRENCES, isIdArray } from "./index";
 
@@ -34,6 +34,7 @@ async function findTask(id: number) {
 export async function PATCH(req: Request) {
     const user = await getUser(req);
     if (!user) return Response.json({ error: "No autenticado" }, { status: 401 });
+    await touchSession(readSessionToken(req));
 
     const id = taskId(req);
     if (!id) return Response.json({ error: "id inválido" }, { status: 400 });
@@ -117,6 +118,7 @@ export async function PATCH(req: Request) {
 export async function DELETE(req: Request) {
     const user = await getUser(req);
     if (!user) return Response.json({ error: "No autenticado" }, { status: 401 });
+    await touchSession(readSessionToken(req));
 
     const id = taskId(req);
     if (!id) return Response.json({ error: "id inválido" }, { status: 400 });

@@ -1,6 +1,6 @@
 import { test, expect, beforeAll, afterAll } from "bun:test";
 import { sql, migrate } from "../lib/db";
-import { createSession } from "../lib/auth";
+import { createSession, TIMEOUT_MINUTES } from "../lib/auth";
 import * as tasksIndex from "./tasks/index";
 import * as taskById from "./tasks/[id]";
 import * as listsIndex from "./lists/index";
@@ -8,6 +8,7 @@ import * as listItems from "./lists/[id]/items";
 import * as push from "./push";
 import * as cronNotify from "./cron/notify";
 import * as notifications from "./notifications";
+import * as me from "./me";
 
 let userId: number;
 let cookie: string;
@@ -61,6 +62,55 @@ afterAll(async () => {
 test("tasks: sin sesión → 401", async () => {
     expect((await tasksIndex.GET(req("/api/tasks", {}, false))).status).toBe(401);
     expect((await tasksIndex.POST(req("/api/tasks", { method: "POST", body: "{}" }, false))).status).toBe(401);
+});
+
+test("sesión expirada → 401 en todos los endpoints protegidos", async () => {
+    // crear sesión temporal y expirarla
+    const name = `expire-${crypto.randomUUID()}`;
+    const hash = await Bun.password.hash("0000");
+    const [u] = await sql`INSERT INTO users (name, pin_hash) VALUES (${name}, ${hash}) RETURNING id`;
+    const token = await createSession(u.id);
+    await sql`UPDATE sessions SET expires_at = now() - interval '1 minute' WHERE token = ${token}`;
+    const expiredCookie = `session=${token}`;
+
+    const r = (path: string, init: RequestInit = {}) =>
+        new Request(`http://x${path}`, { ...init, headers: { "content-type": "application/json", cookie: expiredCookie, ...init.headers } });
+
+    expect((await tasksIndex.GET(r("/api/tasks"))).status).toBe(401);
+    expect((await tasksIndex.POST(r("/api/tasks", { method: "POST", body: "{}" }))).status).toBe(401);
+    expect((await me.GET(r("/api/me"))).status).toBe(401);
+    expect((await listsIndex.GET(r("/api/lists"))).status).toBe(401);
+
+    // cleanup
+    await sql`DELETE FROM sessions WHERE token = ${token}`;
+    await sql`DELETE FROM users WHERE name = ${name}`;
+});
+
+test("acceso a endpoint extiende expires_at", async () => {
+    const name = `touch-${crypto.randomUUID()}`;
+    const hash = await Bun.password.hash("0000");
+    const [u] = await sql`INSERT INTO users (name, pin_hash) VALUES (${name}, ${hash}) RETURNING id`;
+    const token = await createSession(u.id);
+    const before = await sql`SELECT expires_at FROM sessions WHERE token = ${token}`;
+    const beforeTime = new Date(before[0].expires_at).getTime();
+
+    await new Promise((r) => setTimeout(r, 50));
+    const r = (path: string) =>
+        new Request(`http://x${path}`, { headers: { "content-type": "application/json", cookie: `session=${token}` } });
+    await tasksIndex.GET(r("/api/tasks"));
+
+    const after = await sql`SELECT expires_at FROM sessions WHERE token = ${token}`;
+    expect(new Date(after[0].expires_at).getTime()).toBeGreaterThan(beforeTime);
+
+    await sql`DELETE FROM sessions WHERE token = ${token}`;
+    await sql`DELETE FROM users WHERE name = ${name}`;
+});
+
+test("/api/me devuelve inactivityTimeoutMinutes y extiende sesión", async () => {
+    const res = await me.GET(req("/api/me"));
+    expect(res.status).toBe(200);
+    const body = await res.json() as { id: number; name: string; inactivityTimeoutMinutes: number };
+    expect(body.inactivityTimeoutMinutes).toBe(TIMEOUT_MINUTES);
 });
 
 test("tasks: POST valida title", async () => {

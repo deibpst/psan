@@ -28,8 +28,12 @@ export async function migrate() {
       CREATE TABLE IF NOT EXISTS sessions (
         token      TEXT PRIMARY KEY,
         user_id    INTEGER NOT NULL REFERENCES users(id),
-        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        expires_at TIMESTAMPTZ NOT NULL DEFAULT now() + interval '60 minutes'
       )`;
+
+    await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ NOT NULL DEFAULT now() + interval '60 minutes'`;
+    await sql`UPDATE sessions SET expires_at = now() + interval '60 minutes' WHERE expires_at IS NULL`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS tasks (

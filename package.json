@@ -9,7 +9,7 @@
     "typescript": "^5"
   },
   "scripts": {
-    "dev": "bunx vercel dev",
+    "vercel:dev": "bunx vercel dev",
     "seed": "bun lib/seed.ts",
     "test": "bun --env-file=.env.local test --timeout 30000"
   }

@@ -1,5 +1,5 @@
 import { sql } from "../lib/db";
-import { createSession } from "../lib/auth";
+import { createSession, TIMEOUT_MINUTES } from "../lib/auth";
 
 const MAX_FAILURES = 5;
 const WINDOW_MINUTES = 15;
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     const token = await createSession(user.id);
 
     return Response.json(
-        { id: user.id, name: user.name },
+        { id: user.id, name: user.name, inactivityTimeoutMinutes: TIMEOUT_MINUTES },
         {
             headers: {
                 "Set-Cookie": `session=${token}; HttpOnly; Path=/; SameSite=Lax; Secure; Max-Age=2592000`,

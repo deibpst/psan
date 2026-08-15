@@ -13,6 +13,8 @@ export const MEMBERS = [
 export const memberById = (id) => MEMBERS.find((m) => m.id === id);
 
 export let me = null;
+let inactivityTimeoutMs = null;
+let inactivityTimer = null;
 
 // ===== Fechas (siempre CDMX/GDL/Puebla) =====
 const TZ = "America/Mexico_City";
@@ -105,13 +107,27 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // ===== Sesión =====
+
 document.getElementById("logout").addEventListener("click", async () => {
     await api("/api/logout", { method: "POST" });
     location.reload();
 });
 
+function resetInactivityTimer() {
+    if (!inactivityTimeoutMs) return;
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => { location.reload(); }, inactivityTimeoutMs);
+}
+
+const ACTIVITY_EVENTS = ["pointerdown", "keydown", "touchstart"];
+for (const ev of ACTIVITY_EVENTS) {
+    document.addEventListener(ev, resetInactivityTimer, { passive: true });
+}
+
 export function enterApp(user) {
     me = user;
+    inactivityTimeoutMs = (user.inactivityTimeoutMinutes ?? 60) * 60 * 1000;
+    resetInactivityTimer();
     document.getElementById("view-landing").hidden = true;
     document.getElementById("view-loginpage").hidden = true;
     document.getElementById("app").hidden = false;

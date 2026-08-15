@@ -1,10 +1,11 @@
 import { sql } from "../../lib/db";
-import { getUser } from "../../lib/auth";
+import { getUser, touchSession, readSessionToken } from "../../lib/auth";
 
 // GET /api/lists: listas con sus items
 export async function GET(req: Request) {
     const user = await getUser(req);
     if (!user) return Response.json({ error: "No autenticado" }, { status: 401 });
+    await touchSession(readSessionToken(req));
 
     const lists = await sql`
       SELECT l.*, u.name AS created_by_name,
@@ -27,6 +28,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     const user = await getUser(req);
     if (!user) return Response.json({ error: "No autenticado" }, { status: 401 });
+    await touchSession(readSessionToken(req));
 
     const body = (await req.json().catch(() => null)) as { name?: unknown } | null;
     if (!body || typeof body.name !== "string" || !body.name.trim()) {
