@@ -1,65 +1,73 @@
-import { api } from "/api.js";
+import { api, swr } from "/api.js";
 import {
     MEMBERS, memberById, avatarHtml, avatarsHtml, urgency, duePart, todayStr,
     fmtTime, STATUS_LABEL, openSheet, closeSheet, confirmar, me, setAddAction,
+    skelCards, toast,
 } from "/app.js";
 
-export async function renderTasks(section) {
-    section.innerHTML = `<div class="state"><div class="spinner"></div>Cargando…</div>`;
+export async function renderTasks(section, quiet = false) {
+    setAddAction(() => taskSheet(null, section));
 
-    let tasks;
+    const skeleton = () => {
+        section.innerHTML = `<h1 class="large-title">Tareas</h1>
+            <div class="skel skel-line short"></div>${skelCards(3)}
+            <div class="skel skel-line short"></div>${skelCards(2)}`;
+    };
+
+    const paint = (tasks) => {
+        const hoy = todayStr();
+        const manana = plusDays(hoy, 1);
+        const semana = plusDays(hoy, 7);
+
+        const groups = { Vencidas: [], Hoy: [], "Mañana": [], "Esta semana": [], "Después": [], "Sin fecha": [] };
+        const hechas = [];
+
+        for (const t of tasks) {
+            if (t.status === "done") { hechas.push(t); continue; }
+            const due = duePart(t);
+            if (!due) groups["Sin fecha"].push(t);
+            else if (due < hoy) groups.Vencidas.push(t);
+            else if (due === hoy) groups.Hoy.push(t);
+            else if (due === manana) groups["Mañana"].push(t);
+            else if (due <= semana) groups["Esta semana"].push(t);
+            else groups["Después"].push(t);
+        }
+
+        let html = "";
+        for (const [name, list] of Object.entries(groups)) {
+            if (!list.length) continue;
+            html += `<h2 class="group-title">${name}</h2><div class="group">${list.map(cardHtml).join("")}</div>`;
+        }
+        if (!html) html = `<div class="state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                 stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Sin tareas pendientes.<br>Toca + para crear una.</div>`;
+        if (hechas.length) {
+            html += `<details class="hechas"><summary>Hechas (${hechas.length})</summary><div class="group">${hechas.map(cardHtml).join("")}</div></details>`;
+        }
+        section.innerHTML = `<h1 class="large-title">Tareas</h1>` + html;
+
+        section.onclick = (e) => {
+            const doneBtn = e.target.closest("[data-done]");
+            if (doneBtn) {
+                e.stopPropagation();
+                markDone(Number(doneBtn.dataset.done), section);
+                return;
+            }
+            const card = e.target.closest("[data-task]");
+            if (card) taskSheet(tasks.find((t) => t.id === Number(card.dataset.task)), section);
+        };
+    };
+
     try {
-        tasks = await api("/api/tasks");
+        await swr(section, "/api/tasks", { quiet, skeleton, paint });
     } catch {
+        // nunca rechaza: los llamadores quiet restauran su UI en finally
+        if (quiet) return toast("No se pudo actualizar la vista");
         section.innerHTML = `<div class="state">No se pudieron cargar las tareas.<br><br>
           <button class="btn" id="retry">Reintentar</button></div>`;
         section.querySelector("#retry").onclick = () => renderTasks(section);
-        return;
     }
-
-    const hoy = todayStr();
-    const manana = plusDays(hoy, 1);
-    const semana = plusDays(hoy, 7);
-
-    const groups = { Vencidas: [], Hoy: [], "Mañana": [], "Esta semana": [], "Después": [], "Sin fecha": [] };
-    const hechas = [];
-
-    for (const t of tasks) {
-        if (t.status === "done") { hechas.push(t); continue; }
-        const due = duePart(t);
-        if (!due) groups["Sin fecha"].push(t);
-        else if (due < hoy) groups.Vencidas.push(t);
-        else if (due === hoy) groups.Hoy.push(t);
-        else if (due === manana) groups["Mañana"].push(t);
-        else if (due <= semana) groups["Esta semana"].push(t);
-        else groups["Después"].push(t);
-    }
-
-    let html = "";
-    for (const [name, list] of Object.entries(groups)) {
-        if (!list.length) continue;
-        html += `<h2 class="group-title">${name}</h2><div class="group">${list.map(cardHtml).join("")}</div>`;
-    }
-    if (!html) html = `<div class="state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        Sin tareas pendientes.<br>Toca + para crear una.</div>`;
-    if (hechas.length) {
-        html += `<details class="hechas"><summary>Hechas (${hechas.length})</summary><div class="group">${hechas.map(cardHtml).join("")}</div></details>`;
-    }
-    section.innerHTML = `<h1 class="large-title">Tareas</h1>` + html;
-
-    setAddAction(() => taskSheet(null, section));
-    section.onclick = (e) => {
-        const doneBtn = e.target.closest("[data-done]");
-        if (doneBtn) {
-            e.stopPropagation();
-            markDone(Number(doneBtn.dataset.done), section);
-            return;
-        }
-        const card = e.target.closest("[data-task]");
-        if (card) taskSheet(tasks.find((t) => t.id === Number(card.dataset.task)), section);
-    };
 }
 
 function plusDays(ymd, n) {
@@ -94,8 +102,16 @@ function cardHtml(t) {
 
 async function markDone(id, section) {
     if (!confirmar("¿Marcar como hecha?")) return;
-    await api(`/api/tasks/${id}`, { method: "PATCH", body: { status: "done" } });
-    renderTasks(section);
+    const card = section.querySelector(`[data-task="${id}"]`);
+    card?.classList.add("busy");
+    try {
+        await api(`/api/tasks/${id}`, { method: "PATCH", body: { status: "done" } });
+        await renderTasks(section, true);
+    } catch {
+        toast("No se pudo marcar como hecha");
+    } finally {
+        card?.classList.remove("busy"); // si el repintado ya la quitó del DOM, no hace nada
+    }
 }
 
 const REC_LABEL = { "": "No se repite", daily: "Diario", weekly: "Semanal", biweekly: "Quincenal", monthly: "Mensual" };
@@ -162,15 +178,23 @@ function taskSheet(task, section) {
     el.querySelector("#f-cancel").onclick = closeSheet;
 
     if (isEdit && task.created_by === me.id) {
-        el.querySelector("#f-delete").onclick = async () => {
+        const delBtn = el.querySelector("#f-delete");
+        delBtn.onclick = async () => {
             if (!confirmar("¿Eliminar tarea?")) return;
-            await api(`/api/tasks/${task.id}`, { method: "DELETE" });
-            closeSheet();
-            renderTasks(section);
+            delBtn.disabled = true;
+            try {
+                await api(`/api/tasks/${task.id}`, { method: "DELETE" });
+                closeSheet();
+                renderTasks(section, true);
+            } catch {
+                delBtn.disabled = false;
+                toast("No se pudo eliminar");
+            }
         };
     }
 
-    el.querySelector("#f-save").onclick = async () => {
+    const saveBtn = el.querySelector("#f-save");
+    saveBtn.onclick = async () => {
         const title = el.querySelector("#f-title").value.trim();
         if (!title) { el.querySelector("#f-title").focus(); return; }
         if (status === "done" && task?.status !== "done" && !confirmar("¿Marcar como hecha?")) return;
@@ -182,14 +206,29 @@ function taskSheet(task, section) {
             assignees,
             recurrence: recurrence || null,
         };
-        if (isEdit) {
-            await api(`/api/tasks/${task.id}`, { method: "PATCH", body: { ...body, status } });
-        } else {
-            const created = await api("/api/tasks", { method: "POST", body });
-            if (status !== "pending") await api(`/api/tasks/${created.id}`, { method: "PATCH", body: { status } });
+        saveBtn.disabled = true;
+        try {
+            if (isEdit) {
+                await api(`/api/tasks/${task.id}`, { method: "PATCH", body: { ...body, status } });
+            } else {
+                const created = await api("/api/tasks", { method: "POST", body });
+                if (status !== "pending") {
+                    try {
+                        await api(`/api/tasks/${created.id}`, { method: "PATCH", body: { status } });
+                    } catch {
+                        closeSheet();
+                        renderTasks(section, true);
+                        toast("Tarea creada, pero no se pudo cambiar el estado");
+                        return;
+                    }
+                }
+            }
+            closeSheet();
+            renderTasks(section, true);
+        } catch {
+            saveBtn.disabled = false;
+            toast("No se pudo guardar");
         }
-        closeSheet();
-        renderTasks(section);
     };
 }
 
