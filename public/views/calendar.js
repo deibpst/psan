@@ -1,32 +1,48 @@
-import { api } from "/api.js";
-import { avatarsHtml, urgency, duePart, todayStr, STATUS_LABEL, setAddAction } from "/app.js";
+import { swr } from "/api.js";
+import { avatarsHtml, urgency, duePart, todayStr, STATUS_LABEL, setAddAction, skelCards } from "/app.js";
 import { esc } from "/views/tasks.js";
 
 const DOW = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"];
 let mode = window.innerWidth >= 1024 ? "month" : "week"; // móvil: semana; escritorio: mes
-let anchor = null;   // Date dentro del periodo visible
-let selected = null; // "YYYY-MM-DD"
+let anchor = null;    // Date dentro del periodo visible
+let selected = null;  // "YYYY-MM-DD"
+let byDay = {};       // último dataset pintado (para el click de día, sin fetch)
+let loading = true;   // true mientras el skeleton está en pantalla
 
 export async function renderCalendar(section) {
+    setAddAction(null);
     anchor ??= new Date(todayStr() + "T12:00:00");
     selected ??= todayStr();
 
     const [from, to] = range();
-    section.innerHTML = `<div class="state"><div class="spinner"></div>Cargando…</div>`;
+    const path = `/api/tasks?from=${from}&to=${to}`;
 
-    let tasks;
     try {
-        tasks = await api(`/api/tasks?from=${from}&to=${to}`);
+        await swr(section, path, {
+            key: selected,
+            skeleton: () => {
+                loading = true;
+                paintShell(section, skelCards(3), {});
+            },
+            paint: (tasks) => {
+                byDay = {};
+                for (const t of tasks) (byDay[duePart(t)] ??= []).push(t);
+                loading = false;
+                // tras prev/next el día elegido puede quedar fuera de la vista: no afirmar "sin tareas" de un día invisible
+                paintShell(section, selected >= from && selected <= to
+                    ? dayListHtml(byDay[selected] ?? [])
+                    : `<div class="state">Elige un día</div>`);
+            },
+        });
     } catch {
         section.innerHTML = `<div class="state">No se pudo cargar el calendario.<br><br>
           <button class="btn" id="retry">Reintentar</button></div>`;
         section.querySelector("#retry").onclick = () => renderCalendar(section);
-        return;
     }
+}
 
-    const byDay = {};
-    for (const t of tasks) (byDay[duePart(t)] ??= []).push(t);
-
+// pinta encabezado + grilla + lista del día, y liga los manejadores (se reasignan en cada pintada)
+function paintShell(section, listHtml, gridDays = byDay) {
     const title = new Intl.DateTimeFormat("es-MX", { month: "long", year: "numeric" }).format(anchor);
 
     section.innerHTML = `
@@ -41,10 +57,9 @@ export async function renderCalendar(section) {
           </button>
         </div>
       </div>
-      ${mode === "week" ? weekHtml(byDay) : monthHtml(byDay)}
-      <div id="cal-day-list">${dayListHtml(byDay[selected] ?? [])}</div>`;
+      ${mode === "week" ? weekHtml(gridDays) : monthHtml(gridDays)}
+      <div id="cal-day-list">${listHtml}</div>`;
 
-    setAddAction(null);
     section.querySelector("#cal-prev").onclick = () => { move(-1); renderCalendar(section); };
     section.querySelector("#cal-next").onclick = () => { move(1); renderCalendar(section); };
     section.querySelector("#cal-today").onclick = () => {
@@ -56,9 +71,18 @@ export async function renderCalendar(section) {
     section.onclick = (e) => {
         const day = e.target.closest("[data-day]");
         if (!day) return;
-        selected = day.dataset.day;
-        renderCalendar(section);
+        selectDay(section, day.dataset.day);
     };
+}
+
+// click de día: sin fetch, sin re-render completo
+function selectDay(section, day) {
+    selected = day;
+    section.querySelectorAll("[data-day]").forEach((el) => {
+        el.classList.toggle("selected", el.dataset.day === day);
+    });
+    if (loading) return; // skeleton en pantalla: solo mover el resaltado
+    section.querySelector("#cal-day-list").innerHTML = dayListHtml(byDay[selected] ?? []);
 }
 
 function move(dir) {
