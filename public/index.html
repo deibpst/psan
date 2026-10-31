@@ -12,6 +12,12 @@
 </head>
 <body>
 
+  <!-- Splash de arranque: mientras se resuelve /api/me -->
+  <div id="boot" class="boot" role="status" aria-label="Cargando">
+    <img src="/icons/icon-192.png" alt="" width="40" height="40">
+    <div class="spinner"></div>
+  </div>
+
   <!-- Landing -->
   <section id="view-landing" hidden>
 
@@ -190,6 +196,8 @@
   <div id="sheet-backdrop" class="sheet-backdrop" hidden>
     <div id="sheet" class="sheet" role="dialog" aria-modal="true"></div>
   </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script type="module" src="/app.js"></script>
 </body>

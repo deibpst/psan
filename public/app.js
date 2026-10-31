@@ -79,6 +79,22 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet
 // confirm nativo con texto en español; suficiente y accesible
 export const confirmar = (msg) => window.confirm(msg);
 
+// ===== Skeleton (reutiliza .group/.card para que las medidas coincidan) =====
+export function skelCards(n = 3) {
+    const card = `<div class="card skel-card"><div class="card-body"><div class="skel skel-line"></div><div class="skel skel-line short"></div></div></div>`;
+    return `<div class="group" aria-hidden="true">${card.repeat(n)}</div>`;
+}
+
+// ===== Toast =====
+const toastEl = document.getElementById("toast");
+let toastTimer = null;
+export function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toastEl.hidden = true; }, 3000);
+}
+
 // ===== Botón + de la barra (sin FAB, patrón nativo) =====
 const addBtn = document.getElementById("add-btn");
 export function setAddAction(fn) {
@@ -108,9 +124,16 @@ document.addEventListener("visibilitychange", () => {
 
 // ===== Sesión =====
 
-document.getElementById("logout").addEventListener("click", async () => {
-    await api("/api/logout", { method: "POST" });
-    location.reload();
+document.getElementById("logout").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    try {
+        await api("/api/logout", { method: "POST" });
+        location.reload();
+    } catch {
+        btn.disabled = false;
+        toast("No se pudo cerrar sesión");
+    }
 });
 
 function resetInactivityTimer() {
@@ -151,9 +174,16 @@ try {
     renderLogin();
     preAuthRoute();
     window.addEventListener("hashchange", preAuthRoute);
+} finally {
+    document.getElementById("boot").hidden = true;
 }
 
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+if ("serviceWorker" in navigator) {
+    const hadController = !!navigator.serviceWorker.controller; // primera visita: nada que recargar
+    // sw nuevo toma el control → recarga para ver la versión nueva; con un sheet abierto espera al próximo arranque (no pierde el borrador)
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (hadController && backdrop.hidden) location.reload(); });
+    navigator.serviceWorker.register("/sw.js");
+}
 
 // ===== Notificaciones push =====
 const pushBtn = document.getElementById("push-toggle");
@@ -171,22 +201,29 @@ if ("serviceWorker" in navigator && "PushManager" in window) {
         .then((sub) => setPushState(!!sub));
 
     pushBtn.addEventListener("click", async () => {
-        const reg = await navigator.serviceWorker.ready;
-        const sub = await reg.pushManager.getSubscription();
-        if (sub) {
-            await api("/api/push", { method: "DELETE", body: { endpoint: sub.endpoint } });
-            await sub.unsubscribe();
-            setPushState(false);
-            return;
+        pushBtn.disabled = true;
+        try {
+            const reg = await navigator.serviceWorker.ready;
+            const sub = await reg.pushManager.getSubscription();
+            if (sub) {
+                await api("/api/push", { method: "DELETE", body: { endpoint: sub.endpoint } });
+                await sub.unsubscribe();
+                setPushState(false);
+                return;
+            }
+            if ((await Notification.requestPermission()) !== "granted") return;
+            const { key } = await api("/api/push");
+            const newSub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: b64urlToBytes(key),
+            });
+            await api("/api/push", { method: "POST", body: newSub.toJSON() });
+            setPushState(true);
+        } catch {
+            toast("No se pudieron cambiar las notificaciones");
+        } finally {
+            pushBtn.disabled = false;
         }
-        if ((await Notification.requestPermission()) !== "granted") return;
-        const { key } = await api("/api/push");
-        const newSub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: b64urlToBytes(key),
-        });
-        await api("/api/push", { method: "POST", body: newSub.toJSON() });
-        setPushState(true);
     });
 }
 

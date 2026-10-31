@@ -12,5 +12,8 @@
     "vercel:dev": "bunx vercel dev",
     "seed": "bun lib/seed.ts",
     "test": "bun --env-file=.env.local test --timeout 30000"
+  },
+  "dependencies": {
+    "@vercel/functions": "^3.10.5"
   }
 }
