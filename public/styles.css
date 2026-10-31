@@ -111,7 +111,8 @@ select {
 .sheet,
 .seg,
 .quickadd input,
-.state .btn {
+.state .btn,
+.toast {
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);
 }
@@ -121,7 +122,8 @@ select {
   .header,
   .tabbar,
   .group,
-  .sheet {
+  .sheet,
+  .toast {
     background: rgb(255 255 255 / 0.92) !important;
   }
 }
@@ -739,6 +741,12 @@ a.btn {
   transform: scale(0.94);
 }
 
+.login-go:disabled {
+  opacity: 0.6;
+  cursor: progress;
+  transform: none;
+}
+
 @media (min-width: 768px) {
   .split {
     grid-template-rows: none;
@@ -868,6 +876,11 @@ a.btn {
   box-shadow: var(--shadow-hover);
 }
 
+/* ya asentado (post-skeleton o repintado quiet): no repetir la entrada */
+.settled .group {
+  animation: none;
+}
+
 @keyframes rise {
   from {
     opacity: 0;
@@ -939,6 +952,46 @@ a.btn {
   flex-shrink: 0;
 }
 
+/* ===== Skeleton (carga) ===== */
+.skel {
+  border-radius: var(--r-sm);
+  background: linear-gradient(90deg, var(--surface-2) 25%, rgb(15 23 42 / 0.1) 37%, var(--surface-2) 63%);
+  background-size: 200% 100%;
+  animation: skel 1.4s ease-in-out infinite;
+}
+
+@keyframes skel {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* alto de línea ≈ .card-title (16px/600) */
+.skel-line {
+  height: 16px;
+  width: 65%;
+}
+
+/* segunda línea ≈ .card-meta (13px), con el mismo margin-top que la real */
+.skel-line.short {
+  height: 13px;
+  width: 35%;
+  margin-top: 2px;
+}
+
+.skel-card {
+  cursor: default;
+}
+
+.busy {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .chip {
   padding: 2px var(--space-2);
   border-radius: var(--r-sm);
@@ -985,6 +1038,44 @@ a.btn {
   border-radius: 3px;
   background: var(--border);
   margin: 0 auto var(--space-4);
+}
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom) + var(--space-3)); /* sobre la tabbar, igual que el padding de #main */
+  z-index: 30;
+  /* por encima de .sheet-backdrop (20) y .tabbar (10) */
+  transform: translateX(-50%);
+  max-width: calc(100% - var(--space-5) * 2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--r-md);
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-size: 14px;
+  text-align: center;
+  animation: rise 0.18s var(--ease);
+}
+
+/* ===== Splash de arranque ===== */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  gap: var(--space-3);
+  opacity: 0;
+  animation: boot-in var(--t) var(--ease) 0.3s forwards;
+}
+
+@keyframes boot-in {
+  to {
+    opacity: 1;
+  }
 }
 
 .sheet h2 {
