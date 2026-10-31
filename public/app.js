@@ -178,7 +178,12 @@ try {
     document.getElementById("boot").hidden = true;
 }
 
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+if ("serviceWorker" in navigator) {
+    const hadController = !!navigator.serviceWorker.controller; // primera visita: nada que recargar
+    // sw nuevo toma el control → recarga para ver la versión nueva; con un sheet abierto espera al próximo arranque (no pierde el borrador)
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (hadController && backdrop.hidden) location.reload(); });
+    navigator.serviceWorker.register("/sw.js");
+}
 
 // ===== Notificaciones push =====
 const pushBtn = document.getElementById("push-toggle");
