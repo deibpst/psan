@@ -37,12 +37,17 @@ export function renderLogin() {
 
     go.onclick = async () => {
         err.textContent = "";
+        go.disabled = true;
+        go.setAttribute("aria-busy", "true");
         try {
             enterApp(await api("/api/login", { method: "POST", body: { name: select.value, pin: pin() } }));
         } catch (e) {
             reset();
             boxes[0].focus();
             err.textContent = e.status === 429 ? "Demasiados intentos, espera unos minutos" : "PIN incorrecto";
+        } finally {
+            go.disabled = false;
+            go.removeAttribute("aria-busy");
         }
     };
 }
