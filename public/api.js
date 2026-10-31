@@ -1,7 +1,10 @@
 // Wrapper mínimo de fetch: JSON siempre, 401 → recargar (vuelve al login)
 export async function api(path, opts = {}) {
+    const ms = !opts.method || opts.method === "GET" ? 15000 : 30000;
+    // ponytail: AbortSignal.timeout pide Safari 16+; si expira una mutación pudo llegar al servidor igual (el próximo refresh reconcilia)
     const res = await fetch(path, {
         headers: { "content-type": "application/json" },
+        signal: AbortSignal.timeout(ms),
         ...opts,
         body: opts.body ? JSON.stringify(opts.body) : undefined,
     });

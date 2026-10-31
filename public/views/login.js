@@ -42,9 +42,13 @@ export function renderLogin() {
         try {
             enterApp(await api("/api/login", { method: "POST", body: { name: select.value, pin: pin() } }));
         } catch (e) {
-            reset();
-            boxes[0].focus();
-            err.textContent = e.status === 429 ? "Demasiados intentos, espera unos minutos" : "PIN incorrecto";
+            if (typeof e.status !== "number") {
+                err.textContent = "Sin conexión, intenta de nuevo";
+            } else {
+                reset();
+                boxes[0].focus();
+                err.textContent = e.status === 429 ? "Demasiados intentos, espera unos minutos" : "PIN incorrecto";
+            }
         } finally {
             go.disabled = false;
             go.removeAttribute("aria-busy");

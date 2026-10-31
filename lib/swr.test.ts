@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { swr } from "../public/api.js";
+import { api, swr } from "../public/api.js";
 
 // fake mínimo: swr solo necesita classList.toggle sobre la sección
 function fakeSection() {
@@ -149,4 +149,20 @@ test("respuesta vieja que llega tarde no pisa la caché", async () => {
     await swr(fakeSection(), "/t-cache-orden", opts); // hit: pinta lo cacheado, el fallo se ignora
 
     expect(painted).toEqual([{ v: "nueva" }]);
+});
+
+test("api rechaza cuando fetch nunca resuelve y la señal aborta", async () => {
+    (globalThis as any).fetch = (_path: string, init: any) =>
+        new Promise((_, reject) => {
+            init.signal.addEventListener("abort", () => reject(init.signal.reason));
+        });
+
+    let threw = false;
+    try {
+        await api("/t-timeout", { signal: AbortSignal.timeout(10) });
+    } catch (e: any) {
+        threw = true;
+        expect(e.name).toBe("TimeoutError");
+    }
+    expect(threw).toBe(true);
 });
