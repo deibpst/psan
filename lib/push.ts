@@ -1,4 +1,5 @@
 import { sql, pgIntArray } from "./db";
+import { waitUntil } from "@vercel/functions";
 
 // Web Push sin payload (RFC 8030 + VAPID RFC 8292), cero dependencias.
 // VAPID_PUBLIC_KEY: punto EC P-256 sin comprimir (65 bytes) en base64url.
@@ -50,7 +51,15 @@ export async function notifyUsers(userIds: number[], body: string) {
         const subs = await sql`
           SELECT id, endpoint FROM push_subscriptions
           WHERE user_id = ANY(${pgIntArray(ids)}::int[])`;
-        await Promise.allSettled(subs.map((s: PushSub) => sendPush(s)));
+        // ponytail: el aviso ya quedó en notifications (leído por GET /api/notifications);
+        // el fan-out de red (VAPID sign + fetch por suscripción) es lo lento y no debe
+        // retrasar la respuesta. Se difiere con waitUntil para que Vercel no mate la
+        // función antes de que termine.
+        waitUntil(
+            Promise.allSettled(subs.map((s: PushSub) => sendPush(s))).catch((err) => {
+                console.error("push fan-out failed", err);
+            })
+        );
     } catch {
         // sin VAPID configurado o push caído: el aviso queda guardado igual
     }
