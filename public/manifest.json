@@ -2,7 +2,7 @@
   "name": "psan",
   "short_name": "psan",
   "description": "Tareas, calendario y listas de la familia",
-  "start_url": "/",
+  "start_url": "/app",
   "display": "standalone",
   "background_color": "#EEF2FF",
   "theme_color": "#4F46E5",

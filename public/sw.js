@@ -1,7 +1,7 @@
 // Cache del app shell: estáticos cache-first, /api siempre red
-const VERSION = "psan-v26";
+const VERSION = "psan-v27";
 const SHELL = [
-    "/", "/styles.css", "/app.js", "/api.js",
+    "/", "/app", "/styles.css", "/app.js", "/api.js",
     "/views/login.js", "/views/tasks.js", "/views/calendar.js", "/views/lists.js",
     "/manifest.json", "/psan.ico", "/icons/icon-192.png", "/icons/icon-512.png",
     "/icons/pwa-icon-180.png", "/icons/pwa-icon-192.png", "/icons/pwa-icon-512.png", "/icons/pwa-icon-1024.png",
@@ -57,6 +57,6 @@ self.addEventListener("notificationclick", (e) => {
     e.notification.close();
     e.waitUntil(
         clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) =>
-            wins[0] ? wins[0].focus() : clients.openWindow("/"))
+            wins[0] ? wins[0].focus() : clients.openWindow("/app"))
     );
 });
