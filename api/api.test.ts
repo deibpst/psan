@@ -1,7 +1,7 @@
 import { test, expect, beforeAll, afterAll } from "bun:test";
 import { sql, migrate } from "../lib/db";
 import { createSession, TIMEOUT_MINUTES } from "../lib/auth";
-import { clip, reminderText } from "../lib/push";
+import { clip, reminder } from "../lib/push";
 import * as tasksIndex from "./tasks/index";
 import * as taskById from "./tasks/[id]";
 import * as listsIndex from "./lists/index";
@@ -238,13 +238,21 @@ test("notifications: un aviso por dispositivo, sin sesión; sin push no hay fila
         method: "PATCH", body: JSON.stringify({ status: "done" }), headers: { cookie: cookie2 },
     }));
 
+    // user1 la devuelve a pendiente → aviso "marcó ... como pendiente" para user2
+    await taskById.PATCH(req(`/api/tasks/${created.id}`, { method: "PATCH", body: JSON.stringify({ status: "pending" }) }));
+
     // user1 la elimina → "Se eliminó" para user2
     await taskById.DELETE(req(`/api/tasks/${created.id}`, { method: "DELETE" }));
 
     for (const ep of [ep1, ep2]) {
-        const bodies = (await json(await post(ep))).map((n: any) => n.body).join(" | ");
-        expect(bodies).toContain("te pasó una tarea: Aviso");
-        expect(bodies).toContain("Se eliminó: Aviso");
+        const rows = await json(await post(ep));
+        const bodies = rows.map((n: any) => `${n.title}: ${n.body}`).join(" | ");
+        expect(bodies).toContain("Nueva tarea: ");
+        expect(bodies).toContain("te asignó: Aviso");
+        expect(bodies).toContain("Tarea pendiente: ");
+        expect(bodies).toContain("marcó: Aviso como pendiente");
+        expect(bodies).toContain("Tarea eliminada: ");
+        expect(bodies).toContain("eliminó: Aviso");
         expect((await json(await post(ep))).length).toBe(0); // ya entregados
     }
     const [{ n }] = await sql`SELECT count(*)::int AS n FROM notifications WHERE user_id = ${userId}`;
@@ -254,11 +262,12 @@ test("notifications: un aviso por dispositivo, sin sesión; sin push no hay fila
 test("textos: clip a 60 y recordatorio diario", () => {
     expect(clip("a".repeat(61))).toBe("a".repeat(59) + "…");
     expect(clip("corto")).toBe("corto");
-    expect(reminderText(0, 0, "")).toBe("");
-    expect(reminderText(0, 1, "Cita OLAB")).toBe("Buenos días, hoy toca: Cita OLAB");
-    expect(reminderText(0, 3, "Cita OLAB")).toBe("Hoy: Cita OLAB y 2 más");
-    expect(reminderText(1, 2, "x")).toBe("Atención: 1 tarea vencida, 2 para hoy");
-    expect(reminderText(2, 0, "x")).toBe("Atención: 2 tareas vencidas");
+    expect(reminder(0, 0, "")).toBeNull();
+    expect(reminder(0, 1, "Cita OLAB")).toEqual({ title: "Tareas de hoy", body: "Buen día, hoy toca: Cita OLAB" });
+    expect(reminder(0, 3, "Cita OLAB")!.body).toBe("Hoy toca: Cita OLAB y 2 más");
+    expect(reminder(1, 0, "x")).toEqual({ title: "Tareas vencidas", body: "Hay 1 tarea vencida" });
+    expect(reminder(2, 0, "x")!.body).toBe("Hay 2 tareas vencidas");
+    expect(reminder(1, 2, "x")!.body).toBe("Hay 1 tarea vencida y 2 para hoy");
 });
 
 // ---------- recurrence ----------

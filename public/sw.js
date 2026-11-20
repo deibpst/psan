@@ -1,5 +1,5 @@
 // Cache del app shell: estáticos cache-first, /api siempre red
-const VERSION = "psan-v24";
+const VERSION = "psan-v25";
 const SHELL = [
     "/", "/styles.css", "/app.js", "/api.js",
     "/views/login.js", "/views/tasks.js", "/views/calendar.js", "/views/lists.js",
@@ -30,8 +30,8 @@ self.addEventListener("fetch", (e) => {
 
 // Push sin payload: el SW pide sus avisos por endpoint de suscripción (no depende de la
 // sesión, que caduca) y el servidor ya trae el texto armado.
-const notify = (body) =>
-    self.registration.showNotification("psan", { body, icon: "/icons/icon-192.png" });
+const notify = (title, body) =>
+    self.registration.showNotification(title || "psan", { body, icon: "/icons/icon-192.png" });
 
 self.addEventListener("push", (e) => {
     e.waitUntil((async () => {
@@ -43,13 +43,13 @@ self.addEventListener("push", (e) => {
                 body: JSON.stringify({ endpoint: sub.endpoint }),
             }).then((r) => r.json());
             if (Array.isArray(pending) && pending.length) {
-                for (const n of pending.slice(0, 3)) await notify(n.body);
-                if (pending.length > 3) await notify(`…y ${pending.length - 3} avisos más`);
+                for (const n of pending.slice(0, 3)) await notify(n.title, n.body);
+                if (pending.length > 3) await notify("Más avisos", `…y ${pending.length - 3} más`);
                 return;
             }
         } catch {}
         // iOS exige mostrar algo en cada push: lista vacía (push duplicado) o red caída
-        await notify("Hay novedades en psan");
+        await notify("Novedades", "Hay novedades en psan");
     })());
 });
 

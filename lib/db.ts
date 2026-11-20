@@ -107,6 +107,7 @@ export async function migrate() {
         delivered_at TIMESTAMPTZ
       )`;
     await sql`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS endpoint TEXT`;
+    await sql`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS title TEXT`;
     await sql`CREATE INDEX IF NOT EXISTS idx_notifications_endpoint ON notifications(endpoint) WHERE delivered_at IS NULL`;
 
     await sql`

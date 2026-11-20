@@ -92,16 +92,17 @@ export async function PATCH(req: Request) {
     const before = Array.from((task.assignees as number[]) ?? []);
     const after = Array.from((updated.assignees as number[]) ?? []);
     const newlyAssigned = after.filter((id) => !before.includes(id) && id !== user.id);
-    await notifyUsers(newlyAssigned, `${user.name} te pasó una tarea: ${clip(updated.title)}`);
+    await notifyUsers(newlyAssigned, "Nueva tarea", `${user.name} te asignó: ${clip(updated.title)}`);
 
     const interested = [...after, updated.created_by as number]
         .filter((id) => id !== user.id && !newlyAssigned.includes(id));
     const t = clip(updated.title);
-    const msg =
-        statusChanged && updated.status === "done" ? `Listo, ${user.name} terminó: ${t}` :
-        statusChanged && updated.status === "in_progress" ? `${user.name} ya está con: ${t}` :
-        `Hay cambios en: ${t} (${user.name})`;
-    await notifyUsers(interested, msg);
+    const [title, msg] =
+        statusChanged && updated.status === "done" ? ["Tarea terminada", `${user.name} terminó: ${t}`] :
+        statusChanged && updated.status === "in_progress" ? ["Tarea en progreso", `${user.name} está en: ${t}`] :
+        statusChanged ? ["Tarea pendiente", `${user.name} marcó: ${t} como pendiente`] :
+        ["Tarea editada", `${user.name} editó: ${t}`];
+    await notifyUsers(interested, title, msg);
 
     // Tarea recurrente completada → nace la siguiente ocurrencia
     if (statusChanged && updated.status === "done" && updated.recurrence) {
@@ -138,7 +139,7 @@ export async function DELETE(req: Request) {
 
     // Aviso a los asignados (el creador es quien borra)
     const assigned = Array.from((task.assignees as number[]) ?? []).filter((a) => a !== user.id);
-    await notifyUsers(assigned, `Se eliminó: ${clip(task.title)} (${user.name})`);
+    await notifyUsers(assigned, "Tarea eliminada", `${user.name} eliminó: ${clip(task.title)}`);
 
     return Response.json({ ok: true });
 }

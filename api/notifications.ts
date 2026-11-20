@@ -14,8 +14,8 @@ export async function POST(req: Request) {
       WITH d AS (
         UPDATE notifications SET delivered_at = now()
         WHERE endpoint = ${body.endpoint} AND delivered_at IS NULL
-        RETURNING body, created_at)
-      SELECT body, created_at FROM d ORDER BY created_at`;
+        RETURNING title, body, created_at)
+      SELECT title, body, created_at FROM d ORDER BY created_at`;
 
     return Response.json(rows);
 }
