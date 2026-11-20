@@ -12,10 +12,13 @@ export async function POST(req: Request) {
         return Response.json({ error: "Faltan name o pin" }, { status: 400 });
     }
 
+    // minúsculas: el renombre papá→Papá no rompe logins con frontend viejo en caché
+    const key = name.toLowerCase();
+
     // ponytail: rate limit por nombre, no por IP, suficiente para 3 usuarios conocidos
     const [{ count }] = await sql`
       SELECT count(*)::int AS count FROM login_attempts
-      WHERE name = ${name} AND failed_at > now() - ${WINDOW_MINUTES} * interval '1 minute'`;
+      WHERE name = ${key} AND failed_at > now() - ${WINDOW_MINUTES} * interval '1 minute'`;
 
     if (count >= MAX_FAILURES) {
         return Response.json(
@@ -24,15 +27,15 @@ export async function POST(req: Request) {
         );
     }
 
-    const rows = await sql`SELECT id, name, pin_hash FROM users WHERE name = ${name}`;
+    const rows = await sql`SELECT id, name, pin_hash FROM users WHERE lower(name) = ${key}`;
     const user = rows[0] as { id: number; name: string; pin_hash: string } | undefined;
 
     if (!user || !(await Bun.password.verify(pin, user.pin_hash))) {
-        await sql`INSERT INTO login_attempts (name) VALUES (${name})`;
+        await sql`INSERT INTO login_attempts (name) VALUES (${key})`;
         return Response.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 
-    await sql`DELETE FROM login_attempts WHERE name = ${name}`;
+    await sql`DELETE FROM login_attempts WHERE name = ${key}`;
     const token = await createSession(user.id);
 
     return Response.json(

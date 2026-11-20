@@ -7,8 +7,8 @@ import { renderLists } from "/views/lists.js";
 // ponytail: familia fija de 3, hardcodeada. Si crece → endpoint /api/users.
 export const MEMBERS = [
     { id: 1, name: "deib", color: "var(--m-deib)" },
-    { id: 2, name: "papá", color: "var(--m-papa)" },
-    { id: 3, name: "mamá", color: "var(--m-mama)" },
+    { id: 2, name: "Papá", color: "var(--m-papa)" },
+    { id: 3, name: "Mamá", color: "var(--m-mama)" },
 ];
 export const memberById = (id) => MEMBERS.find((m) => m.id === id);
 
