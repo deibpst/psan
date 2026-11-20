@@ -154,6 +154,7 @@ export function enterApp(user) {
     document.getElementById("view-landing").hidden = true;
     document.getElementById("view-loginpage").hidden = true;
     document.getElementById("app").hidden = false;
+    syncPush();
     const m = memberById(user.id);
     document.getElementById("me-avatar").outerHTML = avatarHtml(m ?? { name: user.name, color: "var(--accent)" });
     route();
@@ -225,6 +226,15 @@ if ("serviceWorker" in navigator && "PushManager" in window) {
             pushBtn.disabled = false;
         }
     });
+}
+
+// Re-liga la suscripción de este dispositivo a quien inicia sesión (upsert): evita reactivar
+// notificaciones tras cerrar sesión o si otra cuenta usa el mismo celular.
+async function syncPush() {
+    try {
+        const sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
+        if (sub) await api("/api/push", { method: "POST", body: sub.toJSON() });
+    } catch {} // sin push/SW o sin red: no pasa nada
 }
 
 function b64urlToBytes(s) {

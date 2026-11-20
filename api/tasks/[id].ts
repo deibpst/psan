@@ -1,6 +1,6 @@
 import { sql, pgIntArray, normTask } from "../../lib/db";
 import { getUser, touchSession, readSessionToken } from "../../lib/auth";
-import { notifyUsers } from "../../lib/push";
+import { notifyUsers, clip } from "../../lib/push";
 import { RECURRENCES, isIdArray } from "./index";
 
 const STATUSES = ["pending", "in_progress", "done"] as const;
@@ -92,15 +92,16 @@ export async function PATCH(req: Request) {
     const before = Array.from((task.assignees as number[]) ?? []);
     const after = Array.from((updated.assignees as number[]) ?? []);
     const newlyAssigned = after.filter((id) => !before.includes(id) && id !== user.id);
-    await notifyUsers(newlyAssigned, `${user.name} te asignó: «${updated.title}»`);
+    await notifyUsers(newlyAssigned, `${user.name} te pasó una tarea: ${clip(updated.title)}`);
 
     const interested = [...after, updated.created_by as number]
         .filter((id) => id !== user.id && !newlyAssigned.includes(id));
-    const action =
-        statusChanged && updated.status === "done" ? "marcó como hecha" :
-        statusChanged && updated.status === "in_progress" ? "puso en progreso" :
-        "editó";
-    await notifyUsers(interested, `${user.name} ${action}: «${updated.title}»`);
+    const t = clip(updated.title);
+    const msg =
+        statusChanged && updated.status === "done" ? `Listo, ${user.name} terminó: ${t}` :
+        statusChanged && updated.status === "in_progress" ? `${user.name} ya está con: ${t}` :
+        `Hay cambios en: ${t} (${user.name})`;
+    await notifyUsers(interested, msg);
 
     // Tarea recurrente completada → nace la siguiente ocurrencia
     if (statusChanged && updated.status === "done" && updated.recurrence) {
@@ -137,7 +138,7 @@ export async function DELETE(req: Request) {
 
     // Aviso a los asignados (el creador es quien borra)
     const assigned = Array.from((task.assignees as number[]) ?? []).filter((a) => a !== user.id);
-    await notifyUsers(assigned, `${user.name} eliminó: «${task.title}»`);
+    await notifyUsers(assigned, `Se eliminó: ${clip(task.title)} (${user.name})`);
 
     return Response.json({ ok: true });
 }

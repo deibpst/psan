@@ -96,8 +96,8 @@ export async function migrate() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT now()
       )`;
 
-    // Avisos por evento: el server guarda el texto, el push va vacío y el
-    // service worker lo recoge de GET /api/notifications
+    // Avisos por evento: el server guarda el texto (una fila por dispositivo), el
+    // push va vacío y el service worker lo recoge con POST /api/notifications
     await sql`
       CREATE TABLE IF NOT EXISTS notifications (
         id           SERIAL PRIMARY KEY,
@@ -106,6 +106,8 @@ export async function migrate() {
         created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
         delivered_at TIMESTAMPTZ
       )`;
+    await sql`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS endpoint TEXT`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_notifications_endpoint ON notifications(endpoint) WHERE delivered_at IS NULL`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS login_attempts (
