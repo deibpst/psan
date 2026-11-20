@@ -1,6 +1,6 @@
 import { sql, pgIntArray, normTask } from "../../lib/db";
 import { getUser, touchSession, readSessionToken } from "../../lib/auth";
-import { notifyUsers } from "../../lib/push";
+import { notifyUsers, clip } from "../../lib/push";
 
 const STATUSES = ["pending", "in_progress", "done"] as const;
 export const RECURRENCES = ["daily", "weekly", "biweekly", "monthly"] as const;
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
 
     // Aviso solo a quienes quedaron asignados (no al autor)
     const assigned = ((body.assignees as number[] | undefined) ?? []).filter((id) => id !== user.id);
-    await notifyUsers(assigned, `${user.name} te asignó: «${task.title}»`);
+    await notifyUsers(assigned, `${user.name} te pasó una tarea: ${clip(task.title)}`);
 
     return Response.json(normTask(task), { status: 201 });
 }

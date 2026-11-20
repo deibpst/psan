@@ -39,19 +39,34 @@ async function vapidJwt(audience: string): Promise<string> {
 
 export type PushSub = { id: number; endpoint: string };
 
-// Guarda el aviso por usuario y despierta sus dispositivos con push vacío.
-// Mejor esfuerzo: nunca rompe la operación que lo dispara.
+// Título recortado para que el sistema no corte la notificación
+export const clip = (s: string, n = 60) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+
+// Texto del recordatorio diario; "" = nada que avisar
+export function reminderText(overdue: number, today: number, first: string): string {
+    if (overdue > 0) {
+        const s = overdue > 1 ? "s" : "";
+        return `Atención: ${overdue} tarea${s} vencida${s}` + (today > 0 ? `, ${today} para hoy` : "");
+    }
+    if (today === 1) return `Buenos días, hoy toca: ${clip(first)}`;
+    if (today > 1) return `Hoy: ${clip(first)} y ${today - 1} más`;
+    return "";
+}
+
+// Guarda el aviso por dispositivo suscrito y lo despierta con push vacío.
+// Quien no tiene push activo no genera filas. Mejor esfuerzo: nunca rompe la
+// operación que lo dispara.
 export async function notifyUsers(userIds: number[], body: string) {
     const ids = [...new Set(userIds)].filter((id) => Number.isInteger(id) && id > 0);
     if (!ids.length) return;
     try {
-        for (const uid of ids) {
-            await sql`INSERT INTO notifications (user_id, body) VALUES (${uid}, ${body})`;
-        }
         const subs = await sql`
-          SELECT id, endpoint FROM push_subscriptions
+          SELECT id, user_id, endpoint FROM push_subscriptions
           WHERE user_id = ANY(${pgIntArray(ids)}::int[])`;
-        // ponytail: el aviso ya quedó en notifications (leído por GET /api/notifications);
+        for (const s of subs) {
+            await sql`INSERT INTO notifications (user_id, endpoint, body) VALUES (${s.user_id}, ${s.endpoint}, ${body})`;
+        }
+        // ponytail: el aviso ya quedó en notifications (leído por POST /api/notifications);
         // el fan-out de red (VAPID sign + fetch por suscripción) es lo lento y no debe
         // retrasar la respuesta. Se difiere con waitUntil para que Vercel no mate la
         // función antes de que termine.

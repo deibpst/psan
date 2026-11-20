@@ -1,8 +1,9 @@
 import { sql } from "../../lib/db";
-import { sendPush } from "../../lib/push";
+import { sendPush, reminderText } from "../../lib/push";
 
-// GET /api/cron/notify: Vercel Cron diario. Avisa a cada suscriptor si tiene
-// tareas vencidas o que vencen hoy (asignadas a él o sin asignar).
+// GET /api/cron/notify: Vercel Cron diario. Avisa a cada dispositivo suscrito si su
+// usuario tiene tareas vencidas o que vencen hoy (asignadas a él o sin asignar).
+// El texto se guarda como aviso por dispositivo; el push va vacío.
 export async function GET(req: Request) {
     if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
         return Response.json({ error: "No autorizado" }, { status: 401 });
@@ -12,16 +13,22 @@ export async function GET(req: Request) {
     const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Mexico_City" }).format(new Date());
 
     const subs = await sql`
-      SELECT s.id, s.endpoint, s.user_id,
-             (SELECT count(*) FROM tasks t
-              WHERE t.deleted_at IS NULL AND t.status != 'done'
-                AND t.due_date <= ${today}
-                AND (s.user_id = ANY(t.assignees) OR t.assignees = '{}')) AS due
-      FROM push_subscriptions s`;
+      SELECT s.id, s.endpoint, s.user_id, t.overdue, t.today, t.first
+      FROM push_subscriptions s
+      CROSS JOIN LATERAL (
+        SELECT count(*) FILTER (WHERE due_date < ${today}) AS overdue,
+               count(*) FILTER (WHERE due_date = ${today}) AS today,
+               (array_agg(title ORDER BY due_date, created_at))[1] AS first
+        FROM tasks
+        WHERE deleted_at IS NULL AND status != 'done' AND due_date <= ${today}
+          AND (s.user_id = ANY(assignees) OR assignees = '{}')
+      ) t`;
 
     let sent = 0, failed = 0;
     for (const s of subs) {
-        if (Number(s.due) === 0) continue;
+        const body = reminderText(Number(s.overdue), Number(s.today), s.first ?? "");
+        if (!body) continue;
+        await sql`INSERT INTO notifications (user_id, endpoint, body) VALUES (${s.user_id}, ${s.endpoint}, ${body})`;
         (await sendPush(s)) ? sent++ : failed++;
     }
     return Response.json({ sent, failed });

@@ -1,5 +1,5 @@
 // Cache del app shell: estáticos cache-first, /api siempre red
-const VERSION = "psan-v23";
+const VERSION = "psan-v24";
 const SHELL = [
     "/", "/styles.css", "/app.js", "/api.js",
     "/views/login.js", "/views/tasks.js", "/views/calendar.js", "/views/lists.js",
@@ -28,29 +28,28 @@ self.addEventListener("fetch", (e) => {
     );
 });
 
-// Push sin payload: el SW consulta la API (con cookie de sesión) y compone el texto.
-// Primero avisos por evento pendientes; si no hay, es el recordatorio diario.
+// Push sin payload: el SW pide sus avisos por endpoint de suscripción (no depende de la
+// sesión, que caduca) y el servidor ya trae el texto armado.
 const notify = (body) =>
     self.registration.showNotification("psan", { body, icon: "/icons/icon-192.png" });
 
 self.addEventListener("push", (e) => {
     e.waitUntil((async () => {
         try {
-            const pending = await fetch("/api/notifications", { credentials: "same-origin" }).then((r) => r.json());
+            const sub = await self.registration.pushManager.getSubscription();
+            const pending = await fetch("/api/notifications", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ endpoint: sub.endpoint }),
+            }).then((r) => r.json());
             if (Array.isArray(pending) && pending.length) {
                 for (const n of pending.slice(0, 3)) await notify(n.body);
                 if (pending.length > 3) await notify(`…y ${pending.length - 3} avisos más`);
                 return;
             }
-            const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Mexico_City" }).format(new Date());
-            const tasks = await fetch("/api/tasks", { credentials: "same-origin" }).then((r) => r.json());
-            const n = tasks.filter((t) =>
-                t.status !== "done" && t.due_date && t.due_date.slice(0, 10) <= hoy).length;
-            // n=0: otro dispositivo ya recogió el aviso, mensaje genérico
-            await notify(n === 0 ? "Tienes actividad nueva" : n === 1 ? "1 tarea por vencer" : `${n} tareas por vencer`);
-        } catch {
-            await notify("Tienes actividad nueva");
-        }
+        } catch {}
+        // iOS exige mostrar algo en cada push: lista vacía (push duplicado) o red caída
+        await notify("Hay novedades en psan");
     })());
 });
 

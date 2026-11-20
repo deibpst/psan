@@ -1,6 +1,7 @@
 import { test, expect, beforeAll, afterAll } from "bun:test";
 import { sql, migrate } from "../lib/db";
 import { createSession, TIMEOUT_MINUTES } from "../lib/auth";
+import { clip, reminderText } from "../lib/push";
 import * as tasksIndex from "./tasks/index";
 import * as taskById from "./tasks/[id]";
 import * as listsIndex from "./lists/index";
@@ -52,6 +53,7 @@ afterAll(async () => {
         await sql`DELETE FROM lists WHERE id = ${testListId}`;
     }
     await sql`DELETE FROM notifications WHERE user_id IN (${userId}, ${userId2})`;
+    await sql`DELETE FROM push_subscriptions WHERE user_id IN (${userId}, ${userId2})`;
     await sql`DELETE FROM sessions WHERE user_id IN (${userId}, ${userId2})`;
     await sql`DELETE FROM users WHERE id IN (${userId}, ${userId2})`;
     await sql.end();
@@ -214,36 +216,49 @@ test("tasks: assignees múltiples: crear, filtrar, reemplazar", async () => {
 
 // ---------- avisos por evento ----------
 
-test("notifications: asignar, done ajeno, eliminar → avisos correctos", async () => {
-    expect((await notifications.GET(req("/api/notifications", {}, false))).status).toBe(401);
+test("notifications: un aviso por dispositivo, sin sesión; sin push no hay filas", async () => {
+    const post = (endpoint: unknown) => notifications.POST(
+        req("/api/notifications", { method: "POST", body: JSON.stringify({ endpoint }) }, false));
+    expect((await post(undefined)).status).toBe(400);
 
-    // user1 crea asignándola a user2 → aviso "te asignó" para user2
+    // user2 con 2 dispositivos; user1 sin push
+    const [ep1, ep2] = [1, 2].map(() => `https://example.com/psan-test-${crypto.randomUUID()}`);
+    for (const ep of [ep1, ep2]) {
+        await sql`INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (${userId2}, ${ep}, 't', 't')`;
+    }
+
+    // user1 crea asignándola a user2 → aviso "te pasó una tarea" en cada dispositivo de user2
     const created = await json(await tasksIndex.POST(
         req("/api/tasks", { method: "POST", body: JSON.stringify({ title: "Aviso", assignees: [userId2] }) })
     ));
     cleanupTaskIds.push(created.id);
 
-    // user2 la marca hecha → aviso "marcó como hecha" para user1 (creador)
+    // user2 la marca hecha → aviso para user1 (creador), que no tiene push: sin filas
     await taskById.PATCH(req(`/api/tasks/${created.id}`, {
         method: "PATCH", body: JSON.stringify({ status: "done" }), headers: { cookie: cookie2 },
     }));
 
-    // user1 la elimina → aviso "eliminó" para user2
+    // user1 la elimina → "Se eliminó" para user2
     await taskById.DELETE(req(`/api/tasks/${created.id}`, { method: "DELETE" }));
 
-    const deUser2 = await json(await notifications.GET(
-        req("/api/notifications", { headers: { cookie: cookie2 } })
-    ));
-    const bodies2 = deUser2.map((n: any) => n.body).join(" | ");
-    expect(bodies2).toContain("te asignó");
-    expect(bodies2).toContain("eliminó");
-    expect(bodies2).toContain("«Aviso»");
+    for (const ep of [ep1, ep2]) {
+        const bodies = (await json(await post(ep))).map((n: any) => n.body).join(" | ");
+        expect(bodies).toContain("te pasó una tarea: Aviso");
+        expect(bodies).toContain("Se eliminó: Aviso");
+        expect((await json(await post(ep))).length).toBe(0); // ya entregados
+    }
+    const [{ n }] = await sql`SELECT count(*)::int AS n FROM notifications WHERE user_id = ${userId}`;
+    expect(n).toBe(0);
+});
 
-    const deUser1 = await json(await notifications.GET(req("/api/notifications")));
-    expect(deUser1.map((n: any) => n.body).join(" | ")).toContain("marcó como hecha");
-
-    // segunda lectura: ya entregados → vacío
-    expect((await json(await notifications.GET(req("/api/notifications")))).length).toBe(0);
+test("textos: clip a 60 y recordatorio diario", () => {
+    expect(clip("a".repeat(61))).toBe("a".repeat(59) + "…");
+    expect(clip("corto")).toBe("corto");
+    expect(reminderText(0, 0, "")).toBe("");
+    expect(reminderText(0, 1, "Cita OLAB")).toBe("Buenos días, hoy toca: Cita OLAB");
+    expect(reminderText(0, 3, "Cita OLAB")).toBe("Hoy: Cita OLAB y 2 más");
+    expect(reminderText(1, 2, "x")).toBe("Atención: 1 tarea vencida, 2 para hoy");
+    expect(reminderText(2, 0, "x")).toBe("Atención: 2 tareas vencidas");
 });
 
 // ---------- recurrence ----------
