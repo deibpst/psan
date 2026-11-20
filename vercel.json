@@ -1,5 +1,6 @@
 {
   "bunVersion": "1.x",
+  "rewrites": [{ "source": "/app", "destination": "/index.html" }],
   "crons": [
     {
       "path": "/api/cron/notify",

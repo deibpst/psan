@@ -160,24 +160,18 @@ export function enterApp(user) {
     route();
 }
 
-// pre-auth: landing por defecto, #login = página de acceso
-function preAuthRoute() {
-    if (me) return;
-    const login = location.hash === "#login";
-    document.getElementById("view-landing").hidden = login;
-    document.getElementById("view-loginpage").hidden = !login;
+// "/" = landing (sin sesión ni /api/me); "/app" = la app, o el login si no hay sesión (start_url del PWA)
+if (location.pathname !== "/app") {
+    document.getElementById("view-landing").hidden = false;
+} else {
+    try {
+        enterApp(await api("/api/me"));
+    } catch {
+        renderLogin();
+        document.getElementById("view-loginpage").hidden = false;
+    }
 }
-
-// arranque
-try {
-    enterApp(await api("/api/me"));
-} catch {
-    renderLogin();
-    preAuthRoute();
-    window.addEventListener("hashchange", preAuthRoute);
-} finally {
-    document.getElementById("boot").hidden = true;
-}
+document.getElementById("boot").hidden = true;
 
 if ("serviceWorker" in navigator) {
     const hadController = !!navigator.serviceWorker.controller; // primera visita: nada que recargar
