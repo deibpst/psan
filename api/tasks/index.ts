@@ -77,7 +77,7 @@ export async function POST(req: Request) {
 
     // Aviso solo a quienes quedaron asignados (no al autor)
     const assigned = ((body.assignees as number[] | undefined) ?? []).filter((id) => id !== user.id);
-    await notifyUsers(assigned, `${user.name} te pasó una tarea: ${clip(task.title)}`);
+    await notifyUsers(assigned, "Nueva tarea", `${user.name} te asignó: ${clip(task.title)}`);
 
     return Response.json(normTask(task), { status: 201 });
 }

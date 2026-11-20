@@ -42,21 +42,24 @@ export type PushSub = { id: number; endpoint: string };
 // Título recortado para que el sistema no corte la notificación
 export const clip = (s: string, n = 60) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
 
-// Texto del recordatorio diario; "" = nada que avisar
-export function reminderText(overdue: number, today: number, first: string): string {
+// Recordatorio diario; null = nada que avisar
+export function reminder(overdue: number, today: number, first: string): { title: string; body: string } | null {
     if (overdue > 0) {
         const s = overdue > 1 ? "s" : "";
-        return `Atención: ${overdue} tarea${s} vencida${s}` + (today > 0 ? `, ${today} para hoy` : "");
+        return {
+            title: "Tareas vencidas",
+            body: `Hay ${overdue} tarea${s} vencida${s}` + (today > 0 ? ` y ${today} para hoy` : ""),
+        };
     }
-    if (today === 1) return `Buenos días, hoy toca: ${clip(first)}`;
-    if (today > 1) return `Hoy: ${clip(first)} y ${today - 1} más`;
-    return "";
+    if (today === 1) return { title: "Tareas de hoy", body: `Buen día, hoy toca: ${clip(first)}` };
+    if (today > 1) return { title: "Tareas de hoy", body: `Hoy toca: ${clip(first)} y ${today - 1} más` };
+    return null;
 }
 
 // Guarda el aviso por dispositivo suscrito y lo despierta con push vacío.
 // Quien no tiene push activo no genera filas. Mejor esfuerzo: nunca rompe la
 // operación que lo dispara.
-export async function notifyUsers(userIds: number[], body: string) {
+export async function notifyUsers(userIds: number[], title: string, body: string) {
     const ids = [...new Set(userIds)].filter((id) => Number.isInteger(id) && id > 0);
     if (!ids.length) return;
     try {
@@ -64,7 +67,7 @@ export async function notifyUsers(userIds: number[], body: string) {
           SELECT id, user_id, endpoint FROM push_subscriptions
           WHERE user_id = ANY(${pgIntArray(ids)}::int[])`;
         for (const s of subs) {
-            await sql`INSERT INTO notifications (user_id, endpoint, body) VALUES (${s.user_id}, ${s.endpoint}, ${body})`;
+            await sql`INSERT INTO notifications (user_id, endpoint, title, body) VALUES (${s.user_id}, ${s.endpoint}, ${title}, ${body})`;
         }
         // ponytail: el aviso ya quedó en notifications (leído por POST /api/notifications);
         // el fan-out de red (VAPID sign + fetch por suscripción) es lo lento y no debe

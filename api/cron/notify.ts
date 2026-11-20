@@ -1,5 +1,5 @@
 import { sql } from "../../lib/db";
-import { sendPush, reminderText } from "../../lib/push";
+import { sendPush, reminder } from "../../lib/push";
 
 // GET /api/cron/notify: Vercel Cron diario. Avisa a cada dispositivo suscrito si su
 // usuario tiene tareas vencidas o que vencen hoy (asignadas a él o sin asignar).
@@ -26,9 +26,9 @@ export async function GET(req: Request) {
 
     let sent = 0, failed = 0;
     for (const s of subs) {
-        const body = reminderText(Number(s.overdue), Number(s.today), s.first ?? "");
-        if (!body) continue;
-        await sql`INSERT INTO notifications (user_id, endpoint, body) VALUES (${s.user_id}, ${s.endpoint}, ${body})`;
+        const r = reminder(Number(s.overdue), Number(s.today), s.first ?? "");
+        if (!r) continue;
+        await sql`INSERT INTO notifications (user_id, endpoint, title, body) VALUES (${s.user_id}, ${s.endpoint}, ${r.title}, ${r.body})`;
         (await sendPush(s)) ? sent++ : failed++;
     }
     return Response.json({ sent, failed });
