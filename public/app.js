@@ -66,8 +66,20 @@ const sheetEl = document.getElementById("sheet");
 export function openSheet(html) {
     sheetEl.innerHTML = html;
     backdrop.hidden = false;
-    sheetEl.querySelector("input, textarea, button")?.focus();
     return sheetEl;
+}
+
+// Teclado en pantalla: el visual viewport se encoge y puede desplazarse (iOS no toca el layout viewport).
+// Se publican alto y offset para que el backdrop del sheet siga el área realmente visible.
+const vv = window.visualViewport;
+if (vv) {
+    const syncViewport = () => {
+        const s = document.documentElement.style;
+        s.setProperty("--vvh", `${vv.height}px`);
+        s.setProperty("--vvt", `${vv.offsetTop}px`);
+    };
+    vv.addEventListener("resize", syncViewport);
+    vv.addEventListener("scroll", syncViewport);
 }
 export function closeSheet() {
     backdrop.hidden = true;
