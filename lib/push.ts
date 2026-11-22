@@ -83,6 +83,12 @@ export async function notifyUsers(userIds: number[], title: string, body: string
     }
 }
 
+// Avisa a toda la familia menos a quien hizo el cambio
+export async function notifyFamily(actorId: number, title: string, body: string) {
+    const rows = await sql`SELECT id FROM users WHERE id != ${actorId}`;
+    await notifyUsers(rows.map((r: { id: number }) => r.id), title, body);
+}
+
 // Push vacío: el service worker compone el texto. true = entregado.
 export async function sendPush(sub: PushSub): Promise<boolean> {
     const aud = new URL(sub.endpoint).origin;

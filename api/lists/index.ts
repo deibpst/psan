@@ -1,5 +1,6 @@
 import { sql } from "../../lib/db";
 import { getUser, touchSession, readSessionToken } from "../../lib/auth";
+import { notifyFamily } from "../../lib/push";
 
 // GET /api/lists: listas con sus items
 export async function GET(req: Request) {
@@ -38,6 +39,8 @@ export async function POST(req: Request) {
     const [list] = await sql`
       INSERT INTO lists (name, created_by) VALUES (${body.name.trim()}, ${user.id})
       RETURNING *`;
+
+    await notifyFamily(user.id, "Nueva lista", `${user.name} creó la lista: ${list.name}`);
 
     return Response.json(list, { status: 201 });
 }

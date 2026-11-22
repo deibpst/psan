@@ -430,3 +430,28 @@ test("lists: marcar hecha y reabrir", async () => {
     await sql`DELETE FROM lists WHERE id = ${list.id}`;
 });
 
+// ---------- avisos de listas ----------
+
+// user2 con un dispositivo suscrito; user1 (quien actúa) con otro: no debe recibir nada
+const notifyEp = { u1: `https://example.com/psan-test-${crypto.randomUUID()}`, u2: `https://example.com/psan-test-${crypto.randomUUID()}` };
+const pending = async (ep: string) => (await json(await notifications.POST(
+    req("/api/notifications", { method: "POST", body: JSON.stringify({ endpoint: ep }) }, false)))) as { title: string; body: string }[];
+
+async function subscribeBoth() {
+    for (const [uid, ep] of [[userId, notifyEp.u1], [userId2, notifyEp.u2]] as const) {
+        await sql`INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (${uid}, ${ep}, 't', 't') ON CONFLICT DO NOTHING`;
+    }
+}
+
+test("avisos de listas: crear lista avisa a los demás, no a quien la crea", async () => {
+    await subscribeBoth();
+    const name = `Aviso-${crypto.randomUUID().slice(0, 6)}`;
+    const list = await json(await listsIndex.POST(req("/api/lists", { method: "POST", body: JSON.stringify({ name }) })));
+    const rows = (await pending(notifyEp.u2)).filter((n) => n.body.endsWith(name));
+    expect(rows.length).toBe(1);
+    expect(rows[0].title).toBe("Nueva lista");
+    expect(rows[0].body).toMatch(/^test-.* creó la lista: /);
+    expect((await pending(notifyEp.u1)).length).toBe(0);
+    await sql`DELETE FROM lists WHERE id = ${list.id}`;
+});
+
