@@ -406,3 +406,27 @@ test("lists: eliminar lista con items", async () => {
     expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }))).status).toBe(404);
     expect((await listById.DELETE(req(`/api/lists/abc`, { method: "DELETE" }))).status).toBe(400);
 });
+
+test("lists: marcar hecha y reabrir", async () => {
+    const list = await json(await listsIndex.POST(
+        req("/api/lists", { method: "POST", body: JSON.stringify({ name: "Hecha" }) })
+    ));
+    const patch = (id: unknown, body: unknown, auth = true) =>
+        listById.PATCH(req(`/api/lists/${id}`, { method: "PATCH", body: JSON.stringify(body) }, auth));
+
+    expect((await patch(list.id, { done: true }, false)).status).toBe(401);
+    expect((await patch(list.id, {})).status).toBe(400);
+    expect((await patch("abc", { done: true })).status).toBe(400);
+    expect((await patch(999999, { done: true })).status).toBe(404);
+
+    const done = await json(await patch(list.id, { done: true }));
+    expect(done.done_at).not.toBeNull();
+    const all = await json(await listsIndex.GET(req("/api/lists")));
+    expect(all.find((l: any) => l.id === list.id).done_at).not.toBeNull();
+
+    const reopened = await json(await patch(list.id, { done: false }));
+    expect(reopened.done_at).toBeNull();
+
+    await sql`DELETE FROM lists WHERE id = ${list.id}`;
+});
+

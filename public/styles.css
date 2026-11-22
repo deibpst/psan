@@ -1490,6 +1490,27 @@ html.sheet-open body {
   }
 }
 
+.list-card .end {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.list-card .end .icon-btn {
+  width: 32px;
+  height: 32px;
+  margin: -8px -4px -8px 0; /* no agranda la fila */
+}
+
+.list-card .end .icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.list-card.done > span:first-child {
+  color: var(--text-dim);
+}
+
 .list-card .count {
   color: var(--text-dim);
   font-size: 14px;

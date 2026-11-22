@@ -149,6 +149,18 @@ function route() {
     views[name](section);
 }
 window.addEventListener("hashchange", route);
+// Una vista puede frenar la salida (p. ej. lista nueva sin items): fn async → true deja salir
+let leaveGuard = null;
+export const setLeaveGuard = (fn) => { leaveGuard = fn; };
+document.querySelector(".tabbar").addEventListener("click", async (e) => {
+    const a = e.target.closest("a");
+    if (!a || !leaveGuard) return;
+    e.preventDefault();
+    e.stopPropagation(); // que no llegue al listener de abajo ni al hash por defecto
+    if (!(await leaveGuard())) return;
+    if (location.hash === a.hash) { if (a.dataset.tab === "listas") closeList(document.getElementById("view-listas")); }
+    else location.hash = a.hash;
+}, true);
 document.querySelector('.tabbar a[data-tab="listas"]').addEventListener("click", () => {
     if (location.hash === "#listas") closeList(document.getElementById("view-listas"));
 });
