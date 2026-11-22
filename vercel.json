@@ -1,6 +1,9 @@
 {
   "bunVersion": "1.x",
-  "rewrites": [{ "source": "/app", "destination": "/index.html" }],
+  "rewrites": [
+    { "source": "/app", "destination": "/index.html" },
+    { "source": "/api/health", "destination": "/api/hub?op=health" }
+  ],
   "crons": [
     {
       "path": "/api/cron/notify",
