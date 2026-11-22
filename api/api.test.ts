@@ -455,3 +455,30 @@ test("avisos de listas: crear lista avisa a los demás, no a quien la crea", asy
     await sql`DELETE FROM lists WHERE id = ${list.id}`;
 });
 
+test("avisos de listas: agregar item avisa y agrupa ráfagas", async () => {
+    await subscribeBoth();
+    const name = `Aviso-${crypto.randomUUID().slice(0, 6)}`;
+    const list = await json(await listsIndex.POST(req("/api/lists", { method: "POST", body: JSON.stringify({ name }) })));
+    await pending(notifyEp.u2); // descarta el aviso de "Nueva lista"
+
+    const add = (text: string, cookieOverride?: string) => listItems.POST(req(`/api/lists/${list.id}/items`, {
+        method: "POST", body: JSON.stringify({ text }), ...(cookieOverride ? { headers: { cookie: cookieOverride } } : {}),
+    }));
+    for (const t of ["Leche", "Huevos", "Pan"]) expect((await add(t)).status).toBe(201);
+
+    // 3 items seguidos = 1 solo aviso, con el primer item
+    const rows = await pending(notifyEp.u2);
+    expect(rows.length).toBe(1);
+    expect(rows[0].title).toBe("Lista actualizada");
+    expect(rows[0].body).toMatch(new RegExp(`^test-.* agregó Leche a: ${name}$`));
+    expect((await pending(notifyEp.u1)).length).toBe(0);
+
+    // otra persona agregando a la misma lista sí avisa (a user1)
+    await add("Sal", cookie2);
+    const u1rows = await pending(notifyEp.u1);
+    expect(u1rows.length).toBe(1);
+    expect(u1rows[0].body).toMatch(new RegExp(`^test-.*-b agregó Sal a: ${name}$`));
+    await sql`DELETE FROM list_items WHERE list_id = ${list.id}`;
+    await sql`DELETE FROM lists WHERE id = ${list.id}`;
+});
+
