@@ -1037,6 +1037,7 @@ a.btn {
   height: var(--vvh, 100dvh);
   z-index: 20;
   background: rgb(15 23 42 / 0.35);
+  touch-action: pan-y;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1045,7 +1046,10 @@ a.btn {
 .sheet {
   width: 100%;
   max-height: calc(var(--vvh, 100dvh) - var(--space-4));
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y; /* solo scroll vertical, sin arrastre lateral */
   background: var(--glass-strong);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-lg) var(--r-lg) 0 0;
@@ -1061,14 +1065,28 @@ a.btn {
   }
 }
 
-.sheet::before {
+/* barrita de arriba: botón real (cierra el sheet); alto 44 con margen negativo para no mover el contenido */
+.sheet-grab {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: var(--tap);
+  margin: calc(var(--space-2) * -1) 0 calc(var(--space-4) - var(--tap) + var(--space-2) + 5px);
+  padding: 0;
+  border: none;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sheet-grab::before {
   content: "";
   display: block;
   width: 36px;
   height: 5px;
   border-radius: 3px;
   background: var(--border);
-  margin: 0 auto var(--space-4);
+  margin: var(--space-2) auto 0;
 }
 
 /* ===== Toast ===== */

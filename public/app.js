@@ -64,7 +64,7 @@ const backdrop = document.getElementById("sheet-backdrop");
 const sheetEl = document.getElementById("sheet");
 
 export function openSheet(html) {
-    sheetEl.innerHTML = html;
+    sheetEl.innerHTML = `<button type="button" class="sheet-grab" aria-label="Cerrar"></button>${html}`;
     backdrop.hidden = false;
     return sheetEl;
 }
@@ -85,7 +85,7 @@ export function closeSheet() {
     backdrop.hidden = true;
     sheetEl.innerHTML = "";
 }
-backdrop.addEventListener("click", (e) => { if (e.target === backdrop) closeSheet(); });
+backdrop.addEventListener("click", (e) => { if (e.target === backdrop || e.target.closest(".sheet-grab")) closeSheet(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet(); });
 
 // confirm nativo con texto en español; suficiente y accesible
