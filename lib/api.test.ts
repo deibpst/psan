@@ -45,14 +45,15 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    for (const id of cleanupTaskIds) {
-        await sql`DELETE FROM task_revisions WHERE task_id = ${id}`;
-        await sql`DELETE FROM tasks WHERE id = ${id}`;
-    }
-    if (testListId) {
-        await sql`DELETE FROM list_items WHERE list_id = ${testListId}`;
-        await sql`DELETE FROM lists WHERE id = ${testListId}`;
-    }
+    // Todo lo que crearon los usuarios de prueba, no solo los ids que el test anotó: completar una
+    // tarea recurrente genera la siguiente, y un test que falla a medias dejaba listas sueltas.
+    // Las pruebas corren contra la base real, así que nada de esto puede quedar atrás.
+    await sql`DELETE FROM task_revisions WHERE changed_by IN (${userId}, ${userId2})
+              OR task_id IN (SELECT id FROM tasks WHERE created_by IN (${userId}, ${userId2}))`;
+    await sql`DELETE FROM tasks WHERE created_by IN (${userId}, ${userId2})`;
+    await sql`DELETE FROM list_items WHERE created_by IN (${userId}, ${userId2})
+              OR list_id IN (SELECT id FROM lists WHERE created_by IN (${userId}, ${userId2}))`;
+    await sql`DELETE FROM lists WHERE created_by IN (${userId}, ${userId2})`;
     await sql`DELETE FROM notifications WHERE user_id IN (${userId}, ${userId2})`;
     await sql`DELETE FROM push_subscriptions WHERE user_id IN (${userId}, ${userId2})`;
     await sql`DELETE FROM sessions WHERE user_id IN (${userId}, ${userId2})`;
