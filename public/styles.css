@@ -34,13 +34,13 @@
   /* slate 900 */
   --text-dim: #64748B;
   /* slate 500, 4.7:1 sobre blanco */
-  --accent: #4F46E5;
-  --accent-strong: #4338CA;
+  --accent: #E4007C; /* rosa mexicano */
+  --accent-strong: #B8006A;
   --on-accent: #FFFFFF;
   --primary: #0F172A;
   /* botones principales: negro, como el landing */
   --primary-hover: #1E293B;
-  --ring: 0 0 0 3px rgb(79 70 229 / 0.25);
+  --ring: 0 0 0 3px rgb(228 0 124 / 0.25);
 
   /* vidrio */
   --glass: rgb(255 255 255 / 0.62);
@@ -62,13 +62,13 @@
   /* miembros */
   --m-deib: #7C3AED;
   --m-papa: #EA580C;
-  --m-mama: #DB2777;
+  --m-mama: #B87A6B; /* rose gold */
 
   /* fondo de página */
-  --bg-from: #EEF2FF;
+  --bg-from: #FDF2F8;
   --bg-mid: #FFFFFF;
   --bg-to: #E0F2FE;
-  --bg-glow-a: rgb(79 70 229 / 0.10);
+  --bg-glow-a: rgb(228 0 124 / 0.08);
   --bg-glow-b: rgb(14 165 233 / 0.10);
 
   /* superficies y texto sobre ellas */
@@ -79,9 +79,9 @@
   --scrim: rgb(15 23 42 / 0.35);
   --ink-a09: rgb(15 23 42 / 0.09);
   --ink-a10: rgb(15 23 42 / 0.1);
-  --accent-a05: rgb(79 70 229 / 0.05);
-  --accent-a08: rgb(79 70 229 / 0.08);
-  --accent-a10: rgb(79 70 229 / 0.1);
+  --accent-a05: rgb(228 0 124 / 0.05);
+  --accent-a08: rgb(228 0 124 / 0.08);
+  --accent-a10: rgb(228 0 124 / 0.1);
   --danger-strong: #B91C1C;
   --danger-a08: rgb(220 38 38 / 0.08);
   --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230F172A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
@@ -113,13 +113,13 @@
 
   --text: #F2F2F5;
   --text-dim: #9B9BA8;
-  --accent: #7C83FF;
-  --accent-strong: #A5AAFF;
-  --on-accent: #0B0B14;
+  --accent: #FF4DA6;
+  --accent-strong: #FF80BF;
+  --on-accent: #12000A;
   --primary: #F2F2F5;
   --primary-hover: #FFFFFF;
   --on-primary: #0B0B0F;
-  --ring: 0 0 0 3px rgb(124 131 255 / 0.4);
+  --ring: 0 0 0 3px rgb(255 77 166 / 0.4);
 
   --glass: rgb(16 16 20 / 0.72);
   --glass-strong: rgb(24 24 29 / 0.94);
@@ -137,23 +137,24 @@
   --u-blue: #8FB0D0;
   --u-blue-faint: #6B7C8F;
 
+  --on-color: #14141C;
   --m-deib: #A78BFA;
   --m-papa: #FB923C;
-  --m-mama: #F472B6;
+  --m-mama: #E0A896;
 
   --bg-from: #0A0A0F;
   --bg-mid: #0D0D14;
   --bg-to: #08080C;
-  --bg-glow-a: rgb(99 102 241 / 0.16);
+  --bg-glow-a: rgb(228 0 124 / 0.14);
   --bg-glow-b: rgb(14 165 233 / 0.08);
 
   --glass-fallback: rgb(16 16 20 / 0.96);
   --scrim: rgb(0 0 0 / 0.6);
   --ink-a09: rgb(255 255 255 / 0.09);
   --ink-a10: rgb(255 255 255 / 0.1);
-  --accent-a05: rgb(124 131 255 / 0.08);
-  --accent-a08: rgb(124 131 255 / 0.12);
-  --accent-a10: rgb(124 131 255 / 0.16);
+  --accent-a05: rgb(255 77 166 / 0.08);
+  --accent-a08: rgb(255 77 166 / 0.12);
+  --accent-a10: rgb(255 77 166 / 0.16);
   --danger-strong: #EF4444;
   --danger-a08: rgb(248 113 113 / 0.14);
   --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23F2F2F5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");

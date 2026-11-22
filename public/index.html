@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <title>psan</title>
-  <meta name="theme-color" content="#EEF2FF">
+  <meta name="theme-color" content="#FDF2F8">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/psan.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/pwa-icon-180.png">
@@ -18,7 +18,7 @@
         const pref = get();
         const dark = location.pathname === "/app" && (pref === "dark" || (pref === "system" && mq.matches));
         document.documentElement.dataset.theme = dark ? "dark" : "light";
-        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#0A0A0F" : "#EEF2FF");
+        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#0A0A0F" : "#FDF2F8");
       };
       mq.addEventListener("change", apply);
       window.psanTheme = {
