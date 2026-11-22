@@ -357,7 +357,7 @@ select {
 }
 
 .tabbar a.active {
-  color: var(--bg); /* pestaña invertida: el pill es --text */
+  color: var(--on-accent);
 }
 
 /* mantener presionado: el contenido se encoge un poco, el pill no se mueve */
@@ -373,9 +373,9 @@ select {
   width: 0;
   height: 0;
   border-radius: var(--r-nav);
-  background: var(--text);
+  background: var(--accent);
   pointer-events: none;
-  box-shadow: 0 0 18px color-mix(in srgb, var(--text) var(--glow-alpha), transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) var(--glow-alpha), transparent);
 }
 
 .tab-pill.ready {
@@ -1742,6 +1742,8 @@ details.hechas summary {
 
   .tab-pill {
     border-radius: var(--r-md);
+    background: var(--text); /* en la barra lateral la pestaña activa va invertida */
+    box-shadow: 0 0 22px color-mix(in srgb, var(--text) var(--glow-alpha), transparent);
   }
 
   .side-top {
@@ -1768,6 +1770,10 @@ details.hechas summary {
     padding: var(--space-3) var(--space-4);
     font-size: 17px;
     border-radius: var(--r-md);
+  }
+
+  .tabbar a.active {
+    color: var(--bg);
   }
 
   @media (hover: hover) {
