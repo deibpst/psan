@@ -1,16 +1,16 @@
 import { test, expect, beforeAll, afterAll } from "bun:test";
-import { sql, migrate } from "../lib/db";
-import { createSession, TIMEOUT_MINUTES } from "../lib/auth";
-import { clip, reminder } from "../lib/push";
-import * as tasksIndex from "./tasks/index";
-import * as taskById from "./tasks/[id]";
-import * as listsIndex from "./lists/index";
-import * as listItems from "./lists/[id]/items";
-import * as listById from "./lists/[id]";
-import * as push from "./push";
-import * as cronNotify from "./cron/notify";
-import * as notifications from "./notifications";
-import * as me from "./me";
+import { sql, migrate } from "./db";
+import { createSession, TIMEOUT_MINUTES } from "./auth";
+import { clip, reminder } from "./push";
+import * as tasksIndex from "../api/tasks/index";
+import * as taskById from "../api/tasks/[id]";
+import * as listsIndex from "../api/lists/index";
+import * as listItems from "../api/lists/[id]/items";
+import * as listById from "../api/lists/[id]";
+import * as push from "../api/push";
+import * as cronNotify from "../api/cron/notify";
+import * as notifications from "../api/notifications";
+import * as me from "../api/me";
 
 let userId: number;
 let cookie: string;
