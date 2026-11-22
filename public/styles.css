@@ -16,12 +16,14 @@
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --t: 0.18s;
-  /* esquinas anidadas: radio interno = externo − separación */
-  /* radio uniforme en todo el landing y la app */
-  --r-lg: var(--r-sm);
-  --r: var(--r-sm);
-  --r-md: var(--r-sm);
+  /* escala concéntrica: radio interno = radio externo − padding (mínimo 8px).
+     sheet 28 → campos y botones 12 (padding 16); .group 20 con las filas a sangre (las recorta la card) */
   --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-nav: 16px; /* pill de la barra de pestañas, igual en celular y escritorio */
+  --r: var(--r-sm); /* legado: tarjetas del landing */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -397,7 +399,7 @@ select {
   left: 0;
   width: 0;
   height: 0;
-  border-radius: 999px;
+  border-radius: var(--r-nav);
   background: var(--accent);
   pointer-events: none;
 }
@@ -865,7 +867,7 @@ a.btn {
   width: 56px;
   height: 56px;
   border: none;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   background: var(--primary);
   color: var(--on-primary);
   box-shadow: var(--shadow-login);
@@ -1015,7 +1017,7 @@ a.btn {
 
 /* ===== Grupo de vidrio (anidado: 20 → filas 12) ===== */
 .group {
-  border-radius: var(--r);
+  border-radius: var(--r-lg);
   background: var(--glass);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow);
@@ -1185,7 +1187,7 @@ html.sheet-open body {
   touch-action: none;
   background: var(--glass-strong);
   border: 1px solid var(--glass-border);
-  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
   padding: var(--space-2) var(--space-4);
   padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom) + var(--kb, 0px));
   animation: sheet-up 0.25s var(--ease);
@@ -1727,7 +1729,7 @@ details.hechas summary {
 
   .sheet {
     max-width: 480px;
-    border-radius: var(--r-lg);
+    border-radius: var(--r-xl);
   }
 }
 
@@ -1749,10 +1751,6 @@ details.hechas summary {
   .tabbar a {
     flex: 0 0 auto;
     padding: var(--space-3) 0;
-  }
-
-  .tab-pill {
-    border-radius: var(--r);
   }
 
   #main {
