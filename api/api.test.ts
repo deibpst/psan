@@ -482,3 +482,40 @@ test("avisos de listas: agregar item avisa y agrupa ráfagas", async () => {
     await sql`DELETE FROM lists WHERE id = ${list.id}`;
 });
 
+test("avisos de listas: marcar terminada avisa; reabrir no", async () => {
+    await subscribeBoth();
+    const name = `Aviso-${crypto.randomUUID().slice(0, 6)}`;
+    const list = await json(await listsIndex.POST(req("/api/lists", { method: "POST", body: JSON.stringify({ name }) })));
+    await pending(notifyEp.u2);
+
+    const patch = (done: boolean) => listById.PATCH(req(`/api/lists/${list.id}`, { method: "PATCH", body: JSON.stringify({ done }) }));
+    await patch(true);
+    const rows = await pending(notifyEp.u2);
+    expect(rows.length).toBe(1);
+    expect(rows[0].title).toBe("Lista terminada");
+    expect(rows[0].body).toMatch(new RegExp(`^test-.* marcó como terminada la lista: ${name}$`));
+    expect((await pending(notifyEp.u1)).length).toBe(0);
+
+    await patch(false); // reabrir: en silencio
+    expect((await pending(notifyEp.u2)).length).toBe(0);
+    await sql`DELETE FROM lists WHERE id = ${list.id}`;
+});
+
+test("avisos de listas: eliminar avisa a los demás con el nombre", async () => {
+    await subscribeBoth();
+    const name = `Aviso-${crypto.randomUUID().slice(0, 6)}`;
+    const list = await json(await listsIndex.POST(req("/api/lists", { method: "POST", body: JSON.stringify({ name }) })));
+    await pending(notifyEp.u2);
+
+    expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }))).status).toBe(200);
+    const rows = await pending(notifyEp.u2);
+    expect(rows.length).toBe(1);
+    expect(rows[0].title).toBe("Lista eliminada");
+    expect(rows[0].body).toMatch(new RegExp(`^test-.* eliminó la lista: ${name}$`));
+    expect((await pending(notifyEp.u1)).length).toBe(0);
+
+    // lista inexistente: sin aviso
+    expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }))).status).toBe(404);
+    expect((await pending(notifyEp.u2)).length).toBe(0);
+});
+

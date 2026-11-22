@@ -1,5 +1,6 @@
 import { sql } from "../../lib/db";
 import { getUser, touchSession, readSessionToken } from "../../lib/auth";
+import { notifyFamily } from "../../lib/push";
 
 const listId = (req: Request) => {
     const id = Number(new URL(req.url).pathname.split("/").pop());
@@ -22,6 +23,7 @@ export async function PATCH(req: Request) {
       UPDATE lists SET done_at = CASE WHEN ${body.done}::boolean THEN now() ELSE NULL END WHERE id = ${id} RETURNING *`;
 
     if (rows.length === 0) return Response.json({ error: "Lista no encontrada" }, { status: 404 });
+    if (body.done) await notifyFamily(user.id, "Lista terminada", `${user.name} marcó como terminada la lista: ${rows[0].name}`);
     return Response.json(rows[0]);
 }
 
@@ -36,8 +38,9 @@ export async function DELETE(req: Request) {
 
     const rows = await sql`
       WITH items AS (DELETE FROM list_items WHERE list_id = ${id})
-      DELETE FROM lists WHERE id = ${id} RETURNING id`;
+      DELETE FROM lists WHERE id = ${id} RETURNING name`;
 
     if (rows.length === 0) return Response.json({ error: "Lista no encontrada" }, { status: 404 });
+    await notifyFamily(user.id, "Lista eliminada", `${user.name} eliminó la lista: ${rows[0].name}`);
     return Response.json({ ok: true });
 }
