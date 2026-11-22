@@ -30,7 +30,7 @@ export function closeList(section) {
 export async function renderLists(section, quiet = false) {
     setAddAction(openListId !== null
         ? () => section.querySelector("#new-item")?.focus()
-        : () => newListSheet(section));
+        : () => newListSheet(section), openListId !== null ? "Agregar elemento" : "Crear lista");
 
     try {
         await swr(section, "/api/lists", {
@@ -61,7 +61,7 @@ function paintLists(section, lists) {
     if (openListId !== null) {
         // la lista abierta ya no existe (borrada en otro lado); volvemos al índice
         openListId = null;
-        setAddAction(() => newListSheet(section));
+        setAddAction(() => newListSheet(section), "Crear lista");
     }
 
     setLeaveGuard(null);
@@ -145,7 +145,7 @@ function renderItems(section, list) {
         if (emptyNew === list.id) emptyNew = null;
     }
     setLeaveGuard(emptyNew === list.id ? leaveEmpty : null);
-    setAddAction(ro ? null : () => section.querySelector("#new-item")?.focus());
+    setAddAction(ro ? null : () => section.querySelector("#new-item")?.focus(), "Agregar elemento");
 
     const rows = list.items.map((i) => `
         <div class="item-row">

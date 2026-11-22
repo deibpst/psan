@@ -6,7 +6,7 @@ import {
 } from "/app.js";
 
 export async function renderTasks(section, quiet = false) {
-    setAddAction(() => taskSheet(null, section));
+    setAddAction(() => taskSheet(null, section), "Crear tarea");
 
     const skeleton = () => {
         section.innerHTML = `<h1 class="large-title">Tareas</h1>

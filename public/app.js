@@ -116,23 +116,43 @@ export function toast(msg) {
 
 // ===== Botón + de la barra (sin FAB, patrón nativo) =====
 const addBtn = document.getElementById("add-btn");
-export function setAddAction(fn) {
+export function setAddAction(fn, label = "Crear") {
     addBtn.hidden = !fn;
     addBtn.onclick = fn ?? null;
+    addBtn.querySelector(".lbl").textContent = label; // solo se ve en la barra lateral
 }
 
-// ===== Pill de la barra: se coloca bajo la pestaña activa (inset 8px por lado, 4px arriba y abajo) =====
+// ===== Pill de la barra: se coloca bajo la pestaña activa (celular: inset 8px por lado y 4px arriba y abajo; escritorio: fila completa) =====
+const desk = matchMedia("(min-width: 1024px)"); // mismo corte que la barra lateral en styles.css
 const pill = document.querySelector(".tab-pill");
 function movePill() {
     const a = document.querySelector(".tabbar a.active");
     if (!a || !a.offsetWidth) return; // barra oculta: no hay medidas
-    pill.style.width = `${a.offsetWidth - 16}px`;
-    pill.style.height = `${a.offsetHeight - 8}px`;
-    pill.style.transform = `translate(${a.offsetLeft + 8}px, ${a.offsetTop + 4}px)`;
+    const [ix, iy] = desk.matches ? [0, 0] : [8, 4];
+    pill.style.width = `${a.offsetWidth - 2 * ix}px`;
+    pill.style.height = `${a.offsetHeight - 2 * iy}px`;
+    pill.style.transform = `translate(${a.offsetLeft + ix}px, ${a.offsetTop + iy}px)`;
     // la primera posición va sin animación; desde el siguiente frame ya anima
     requestAnimationFrame(() => pill.classList.add("ready"));
 }
 window.addEventListener("resize", movePill);
+
+// Escritorio: logo, usuario y botones del header pasan a la barra lateral (mismos nodos, conservan ids y eventos)
+const hdr = document.querySelector(".header");
+const brand = hdr.querySelector(".brand-lockup");
+const tools = ["me-slot", "add-btn", "push-toggle", "theme-btn", "logout"].map((id) => document.getElementById(id));
+function placeChrome() {
+    if (desk.matches) {
+        document.querySelector(".side-top").append(brand, tools[0]);
+        document.querySelector(".side-opts").append(...tools.slice(1));
+    } else {
+        hdr.prepend(brand);
+        hdr.querySelector(".header-actions").append(...tools);
+    }
+    movePill();
+}
+desk.addEventListener("change", placeChrome);
+placeChrome();
 
 // ===== Router =====
 const views = { tareas: renderTasks, calendario: renderCalendar, listas: renderLists };
@@ -229,6 +249,7 @@ export function enterApp(user) {
     syncPush();
     const m = memberById(user.id);
     document.getElementById("me-avatar").outerHTML = avatarHtml(m ?? { name: user.name, color: "var(--accent)" });
+    document.getElementById("me-name").textContent = (m ?? user).name;
     route();
 }
 
