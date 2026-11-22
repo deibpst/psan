@@ -66,13 +66,8 @@
   --m-papa: #EA580C;
   --m-mama: #B87A6B; /* rose gold */
 
-  /* fondo de página */
-  --bg-from: #FDF2F8;
+  /* barra superior */
   --chrome: #FFFFFF; /* header sólido; igual al theme-color de index.html. iOS pinta su barra de estado blanca (claro) o negra (oscuro) */
-  --bg-mid: #FFFFFF;
-  --bg-to: #E0F2FE;
-  --bg-glow-a: rgb(228 0 124 / 0.08);
-  --bg-glow-b: rgb(14 165 233 / 0.10);
 
   /* superficies y texto sobre ellas */
   --surface: #FFFFFF; /* solo landing */
@@ -143,12 +138,7 @@
   --m-papa: #FB923C;
   --m-mama: #E0A896;
 
-  --bg-from: #000000;
   --chrome: #000000;
-  --bg-mid: #0D0D14;
-  --bg-to: #08080C;
-  --bg-glow-a: rgb(228 0 124 / 0.14);
-  --bg-glow-b: rgb(14 165 233 / 0.08);
 
   --scrim: rgb(0 0 0 / 0.6);
   --ink-a09: rgb(255 255 255 / 0.09);
@@ -177,11 +167,7 @@ body {
   font-size: 16px;
   color: var(--text);
   min-height: 100dvh;
-  background:
-    radial-gradient(600px 400px at 85% -5%, var(--bg-glow-a), transparent 70%),
-    radial-gradient(700px 500px at -10% 100%, var(--bg-glow-b), transparent 70%),
-    linear-gradient(160deg, var(--bg-from), var(--bg-mid) 45%, var(--bg-to));
-  background-attachment: fixed;
+  background: var(--bg);
 }
 
 button {
