@@ -6,6 +6,7 @@ import * as tasksIndex from "./tasks/index";
 import * as taskById from "./tasks/[id]";
 import * as listsIndex from "./lists/index";
 import * as listItems from "./lists/[id]/items";
+import * as listById from "./lists/[id]";
 import * as push from "./push";
 import * as cronNotify from "./cron/notify";
 import * as notifications from "./notifications";
@@ -384,4 +385,24 @@ test("lists: crear lista, agregar/palomear/borrar items", async () => {
         req(`/api/lists/999999/items`, { method: "POST", body: JSON.stringify({ text: "x" }) })
     );
     expect(notFound.status).toBe(404);
+});
+
+test("lists: eliminar lista con items", async () => {
+    const list = await json(await listsIndex.POST(
+        req("/api/lists", { method: "POST", body: JSON.stringify({ name: "Borrar" }) })
+    ));
+    await listItems.POST(
+        req(`/api/lists/${list.id}/items`, { method: "POST", body: JSON.stringify({ text: "a" }) })
+    );
+
+    expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }, false))).status).toBe(401);
+    expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }))).status).toBe(200);
+
+    const all = await json(await listsIndex.GET(req("/api/lists")));
+    expect(all.some((l: any) => l.id === list.id)).toBe(false);
+    const left = await sql`SELECT 1 FROM list_items WHERE list_id = ${list.id}`;
+    expect(left.length).toBe(0);
+
+    expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }))).status).toBe(404);
+    expect((await listById.DELETE(req(`/api/lists/abc`, { method: "DELETE" }))).status).toBe(400);
 });

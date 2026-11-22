@@ -114,9 +114,24 @@ function renderItems(section, list) {
       <form class="quickadd" id="quickadd">
         <input type="text" id="new-item" placeholder="Agregar…" aria-label="Nuevo elemento">
         <button class="btn" type="submit">+</button>
-      </form>`;
+      </form>
+      <button class="btn btn-danger del-list" id="del-list">Eliminar lista</button>`;
 
     section.querySelector("#back").onclick = () => { openListId = null; renderLists(section); };
+
+    section.querySelector("#del-list").onclick = async (e) => {
+        if (!confirmar(`¿Eliminar la lista "${list.name}" y sus ${list.items.length} elementos?`)) return;
+        e.target.disabled = true;
+        try {
+            await api(`/api/lists/${list.id}`, { method: "DELETE" });
+            openListId = null;
+            await renderLists(section, true);
+            toast("Lista eliminada");
+        } catch {
+            e.target.disabled = false;
+            toast("No se pudo eliminar la lista");
+        }
+    };
 
     section.querySelector("#quickadd").onsubmit = async (e) => {
         e.preventDefault();

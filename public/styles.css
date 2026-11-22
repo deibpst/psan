@@ -1584,6 +1584,11 @@ html.sheet-open body {
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 
+.del-list {
+  width: 100%;
+  margin-top: var(--space-5);
+}
+
 .quickadd input:focus {
   border-color: var(--accent);
   box-shadow: var(--ring);
