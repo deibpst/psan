@@ -157,6 +157,29 @@ document.addEventListener("visibilitychange", () => {
 
 // ===== Sesión =====
 
+// Apariencia: sheet con Claro / Oscuro / Sistema; el cambio se ve al instante
+document.getElementById("theme-btn").addEventListener("click", () => {
+    const cur = window.psanTheme.get();
+    const el = openSheet(`
+      <h2>Apariencia</h2>
+      <div class="field"><label>Tema</label>
+        <div class="seg" id="t-seg">
+          ${[["light", "Claro"], ["dark", "Oscuro"], ["system", "Sistema"]].map(([k, v]) =>
+            `<button type="button" data-t="${k}" class="${k === cur ? "selected" : ""}" aria-pressed="${k === cur}">${v}</button>`).join("")}
+        </div></div>
+      <div class="sheet-actions"><button class="btn" id="t-done">Listo</button></div>`);
+    el.querySelector("#t-seg").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        window.psanTheme.set(b.dataset.t);
+        for (const x of el.querySelectorAll("#t-seg button")) {
+            x.classList.toggle("selected", x === b);
+            x.setAttribute("aria-pressed", String(x === b));
+        }
+    };
+    el.querySelector("#t-done").onclick = closeSheet;
+});
+
 document.getElementById("logout").addEventListener("click", async (e) => {
     const btn = e.currentTarget;
     btn.disabled = true;

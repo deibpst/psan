@@ -7,8 +7,12 @@
   font-display: swap;
 }
 
-/* ===== Tokens (claro; los de modo oscuro llegan en la fase 2) ===== */
-:root {
+/* ===== Tokens =====
+   Claro en :root y [data-theme="light"]; oscuro en [data-theme="dark"] (lo pone el script de index.html).
+   Los componentes solo usan var(--token). */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --t: 0.18s;
@@ -101,6 +105,66 @@
   --on-image-70: rgb(255 255 255 / 0.7);
   --hero-scrim: linear-gradient(180deg, rgb(15 23 42 / 0.30), rgb(15 23 42 / 0.45));
   --product-scrim: linear-gradient(180deg, rgb(15 23 42 / 0.35), rgb(15 23 42 / 0.5));
+}
+
+/* Oscuro: paleta inicial, se afina en la fase de paleta */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --text: #F2F2F5;
+  --text-dim: #9B9BA8;
+  --accent: #7C83FF;
+  --accent-strong: #A5AAFF;
+  --on-accent: #0B0B14;
+  --primary: #F2F2F5;
+  --primary-hover: #FFFFFF;
+  --on-primary: #0B0B0F;
+  --ring: 0 0 0 3px rgb(124 131 255 / 0.4);
+
+  --glass: rgb(16 16 20 / 0.72);
+  --glass-strong: rgb(24 24 29 / 0.94);
+  --glass-border: rgb(255 255 255 / 0.08);
+  --shadow: 0 8px 32px rgb(0 0 0 / 0.5);
+  --shadow-hover: 0 12px 40px rgb(0 0 0 / 0.6);
+  --surface: #2A2A31;
+  --surface-2: rgb(255 255 255 / 0.06);
+  --border: rgb(255 255 255 / 0.1);
+  --tint-alpha: 18%;
+
+  --u-red: #F87171;
+  --u-yellow: #FBBF24;
+  --u-green: #4ADE80;
+  --u-blue: #8FB0D0;
+  --u-blue-faint: #6B7C8F;
+
+  --m-deib: #A78BFA;
+  --m-papa: #FB923C;
+  --m-mama: #F472B6;
+
+  --bg-from: #0A0A0F;
+  --bg-mid: #0D0D14;
+  --bg-to: #08080C;
+  --bg-glow-a: rgb(99 102 241 / 0.16);
+  --bg-glow-b: rgb(14 165 233 / 0.08);
+
+  --glass-fallback: rgb(16 16 20 / 0.96);
+  --scrim: rgb(0 0 0 / 0.6);
+  --ink-a09: rgb(255 255 255 / 0.09);
+  --ink-a10: rgb(255 255 255 / 0.1);
+  --accent-a05: rgb(124 131 255 / 0.08);
+  --accent-a08: rgb(124 131 255 / 0.12);
+  --accent-a10: rgb(124 131 255 / 0.16);
+  --danger-strong: #EF4444;
+  --danger-a08: rgb(248 113 113 / 0.14);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23F2F2F5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
+  --shadow-btn: 0 2px 8px rgb(0 0 0 / 0.5);
+  --shadow-btn-hover: 0 6px 20px rgb(0 0 0 / 0.6);
+  --shadow-danger: 0 2px 8px rgb(248 113 113 / 0.3);
+  --shadow-danger-hover: 0 6px 20px rgb(248 113 113 / 0.4);
+  --shadow-login: 0 4px 16px rgb(0 0 0 / 0.5);
+  --shadow-login-hover: 0 8px 24px rgb(0 0 0 / 0.6);
+  --shadow-seg: 0 1px 4px rgb(0 0 0 / 0.4);
 }
 
 /* ===== Base ===== */
@@ -907,6 +971,7 @@ a.btn {
 
 .btn-danger {
   background: var(--u-red);
+  color: var(--on-color);
   box-shadow: var(--shadow-danger);
 }
 
