@@ -71,13 +71,13 @@ export function openSheet(html) {
 }
 
 // Teclado en pantalla: el visual viewport se encoge y puede desplazarse (iOS no toca el layout viewport).
-// Se publican alto y offset para que el backdrop del sheet siga el área realmente visible.
+// Se publica el alto visible y cuánto tapa el teclado; el backdrop cubre todo el layout y el sheet se estira bajo el teclado.
 const vv = window.visualViewport;
 if (vv) {
     const syncViewport = () => {
         const s = document.documentElement.style;
         s.setProperty("--vvh", `${vv.height}px`);
-        s.setProperty("--vvt", `${vv.offsetTop}px`);
+        s.setProperty("--kb", `${Math.max(0, innerHeight - vv.height - vv.offsetTop)}px`);
     };
     vv.addEventListener("resize", syncViewport);
     vv.addEventListener("scroll", syncViewport);
