@@ -66,6 +66,7 @@
 
   /* fondo de página */
   --bg-from: #FDF2F8;
+  --chrome: #FDF2F8; /* header sólido; igual al theme-color de index.html (barra de estado) */
   --bg-mid: #FFFFFF;
   --bg-to: #E0F2FE;
   --bg-glow-a: rgb(228 0 124 / 0.08);
@@ -143,6 +144,7 @@
   --m-mama: #E0A896;
 
   --bg-from: #0A0A0F;
+  --chrome: #0A0A0F;
   --bg-mid: #0D0D14;
   --bg-to: #08080C;
   --bg-glow-a: rgb(228 0 124 / 0.14);
@@ -245,7 +247,7 @@ select {
   justify-content: space-between;
   padding: var(--space-2) var(--space-4);
   padding-top: calc(var(--space-2) + env(safe-area-inset-top));
-  background: var(--glass);
+  background: var(--chrome);
   border-bottom: 1px solid var(--glass-border);
 }
 
