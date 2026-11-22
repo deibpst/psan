@@ -22,7 +22,7 @@
   --r-md: 12px;
   --r-lg: 20px;
   --r-xl: 28px;
-  --r-nav: 16px; /* pill de la barra de pestañas, igual en celular y escritorio */
+  --r-nav: 999px; /* pill de la barra de abajo del celular: cápsula (la barra lateral usa --r-md) */
   --r: var(--r-sm); /* legado: tarjetas del landing */
   --space-1: 4px;
   --space-2: 8px;
@@ -52,6 +52,7 @@
   --surface-2: rgb(15 23 42 / 0.05);
   --border: rgb(15 23 42 / 0.08);
   --tint-alpha: 12%;
+  --glow-alpha: 24%; /* halo de los rellenos de color: sutil en claro, más fuerte en oscuro */
 
   /* urgencia */
   --u-red: #E5002B;
@@ -125,6 +126,7 @@
   --seg-track: #26262C;
   --seg-on: #3A3A42;
   --tint-alpha: 16%;
+  --glow-alpha: 46%;
 
   --u-red: #FF4D5E;
   --u-yellow: #FFC400;
@@ -222,6 +224,19 @@ select {
   display: flex;
   align-items: center;
   gap: var(--space-1);
+}
+
+.side-top,
+.side-ctx,
+.side-opts,
+.icon-btn .lbl,
+.me-name {
+  display: none; /* solo existen en la barra lateral de escritorio */
+}
+
+.me-slot {
+  display: inline-flex;
+  align-items: center;
 }
 
 .icon-btn {
@@ -360,6 +375,7 @@ select {
   border-radius: var(--r-nav);
   background: var(--accent);
   pointer-events: none;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) var(--glow-alpha), transparent);
 }
 
 .tab-pill.ready {
@@ -828,6 +844,7 @@ a.btn {
   border-radius: var(--r-md);
   background: var(--primary);
   color: var(--on-primary);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--primary) var(--glow-alpha), transparent);
   animation: rise 0.18s var(--ease);
   transition: background var(--t) var(--ease), transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
@@ -914,6 +931,7 @@ a.btn {
   color: var(--on-primary);
   font-size: 16px;
   font-weight: 600;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--primary) var(--glow-alpha), transparent);
   transition: background var(--t) var(--ease), transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 
@@ -931,6 +949,7 @@ a.btn {
 .btn-danger {
   background: var(--u-red);
   color: var(--on-color);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--u-red) var(--glow-alpha), transparent);
 }
 
 @media (hover: hover) {
@@ -942,6 +961,7 @@ a.btn {
 .btn-secondary {
   background: var(--surface-2);
   color: var(--text);
+  box-shadow: none;
 }
 
 @media (hover: hover) {
@@ -1050,6 +1070,7 @@ a.btn {
   border-radius: 50%;
   background: var(--u);
   flex-shrink: 0;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--u) var(--glow-alpha), transparent);
 }
 
 /* ===== Skeleton (carga) ===== */
@@ -1551,6 +1572,7 @@ html.sheet-open body {
   background: var(--accent);
   border-color: var(--accent);
   transform: scale(1.08);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) var(--glow-alpha), transparent);
 }
 
 .item-row input[type="checkbox"]:checked::after {
@@ -1699,32 +1721,130 @@ details.hechas summary {
 }
 
 /* ===== Escritorio: barra lateral ===== */
+/* El header desaparece: app.js (placeChrome) mueve logo, usuario y botones a .side-top / .side-opts. Mismo corte (1024px) que `desk` en app.js. */
 @media (min-width: 1024px) {
+  .header {
+    display: none;
+  }
+
   .tabbar {
     top: 0;
     bottom: 0;
     left: 0;
     right: auto;
     flex-direction: column;
-    justify-content: flex-start;
-    width: 88px;
-    padding-top: 72px;
+    gap: var(--space-2); /* aire entre filas: el hover no pega con la pestaña activa */
+    width: 260px;
+    padding: var(--space-5) var(--space-3);
     border-top: none;
-    border-right: 1px solid var(--border);
+    overflow-y: auto;
+  }
+
+  .tab-pill {
+    border-radius: var(--r-md);
+    background: var(--text); /* en la barra lateral la pestaña activa va invertida */
+    box-shadow: 0 0 22px color-mix(in srgb, var(--text) var(--glow-alpha), transparent);
+  }
+
+  .side-top {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: 0 var(--space-4) var(--space-5);
+  }
+
+  .me-slot {
+    gap: var(--space-3);
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .me-name {
+    display: inline;
   }
 
   .tabbar a {
     flex: 0 0 auto;
-    padding: var(--space-3) 0;
+    flex-direction: row;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    font-size: 17px;
+    border-radius: var(--r-md);
+  }
+
+  .tabbar a.active {
+    color: var(--bg);
+  }
+
+  @media (hover: hover) {
+    .tabbar a:not(.active):hover {
+      background: var(--surface-2);
+    }
+  }
+
+  .side-ctx {
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border);
+  }
+
+  .side-ctx:has([hidden]) {
+    display: none; /* sin acción (Calendario): tampoco línea */
+  }
+
+  .side-opts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-top: auto; /* al fondo de la barra */
+  }
+
+  .side-title {
+    margin: 0;
+    padding: 0 var(--space-4) var(--space-2);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+
+  .side-ctx .icon-btn,
+  .side-opts .icon-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    height: auto;
+    padding: var(--space-3) var(--space-4);
+    font: inherit;
+    font-size: 17px;
+    font-weight: 600;
+    text-align: left;
+    color: var(--text-dim);
+  }
+
+  .side-ctx .lbl,
+  .side-opts .lbl {
+    display: inline;
+  }
+
+  .side-ctx .icon-btn svg,
+  .side-opts .icon-btn svg {
+    width: 24px; /* mismo ancho que los íconos de las pestañas: los textos quedan alineados */
+    height: 24px;
+    flex-shrink: 0;
   }
 
   #main {
-    margin-left: 88px;
+    margin-left: 260px;
     max-width: 860px;
+    padding-top: var(--space-5);
     padding-bottom: var(--space-4);
   }
 
-  .header {
-    padding-left: calc(88px + var(--space-4));
+  .toast {
+    bottom: var(--space-4);
+    left: calc(50% + 130px); /* centrado en el área de contenido */
   }
 }

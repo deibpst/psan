@@ -46,3 +46,14 @@ export async function swr(section, path, { paint, skeleton, key = "", quiet = fa
         if (!hit || quiet) { shown.delete(section); throw e; } // con caché pintada, el fallo deja lo viejo
     }
 }
+
+// Repintar con innerHTML cierra los <details> (p. ej. "Hechas") y la página salta arriba:
+// se recuerda qué estaba abierto y el scroll, y se restauran justo después de pintar.
+export function repaint(section, paint) {
+    const open = [...section.querySelectorAll("details")].map((d) => d.open);
+    const y = window.scrollY;
+    paint();
+    section.querySelectorAll("details").forEach((d, i) => { d.open = open[i] ?? false; });
+    window.scrollTo(0, y);
+}
+
