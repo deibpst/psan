@@ -211,6 +211,13 @@ select {
   height: 32px;
 }
 
+/* el trazo del logo es negro: en oscuro se invierte para que no desaparezca */
+[data-theme="dark"] .header-brand,
+[data-theme="dark"] .split-brand img,
+[data-theme="dark"] .boot img {
+  filter: invert(1);
+}
+
 .header-actions {
   display: flex;
   align-items: center;
