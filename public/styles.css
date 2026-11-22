@@ -1028,6 +1028,13 @@ a.btn {
   font-weight: 500;
 }
 
+/* con un sheet abierto la página de atrás no se mueve (ni header sticky, ni barra del navegador, ni rebote) */
+html.sheet-open,
+html.sheet-open body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* ===== Sheet (anidado: 24 → campos 12) ===== */
 .sheet-backdrop {
   position: fixed;

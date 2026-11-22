@@ -66,6 +66,7 @@ const sheetEl = document.getElementById("sheet");
 export function openSheet(html) {
     sheetEl.innerHTML = `<button type="button" class="sheet-grab" aria-label="Cerrar"></button>${html}`;
     backdrop.hidden = false;
+    document.documentElement.classList.add("sheet-open"); // congela la página de atrás
     return sheetEl;
 }
 
@@ -83,6 +84,7 @@ if (vv) {
 }
 export function closeSheet() {
     sheetEl.classList.remove("kb");
+    document.documentElement.classList.remove("sheet-open");
     backdrop.hidden = true;
     sheetEl.innerHTML = "";
 }
