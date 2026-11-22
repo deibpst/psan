@@ -83,6 +83,27 @@ export async function notifyUsers(userIds: number[], title: string, body: string
     }
 }
 
+// Avisa a toda la familia menos a quien hizo el cambio
+export async function notifyFamily(actorId: number, title: string, body: string) {
+    const rows = await sql`SELECT id FROM users WHERE id != ${actorId}`;
+    await notifyUsers(rows.map((r: { id: number }) => r.id), title, body);
+}
+
+// Item agregado a una lista. Agrupa: si ese mismo usuario ya recibió un aviso igual de
+// esta persona para esta lista en los últimos 2 min, no manda otro (agregar 10 seguidos = 1 push).
+export async function notifyItemAdded(actor: { id: number; name: string }, list: string, text: string) {
+    const prefix = `${actor.name} agregó `;
+    const suffix = ` a: ${list}`;
+    const rows = await sql`
+      SELECT u.id FROM users u WHERE u.id != ${actor.id} AND NOT EXISTS (
+        SELECT 1 FROM notifications n
+        WHERE n.user_id = u.id AND n.title = 'Lista actualizada'
+          AND starts_with(n.body, ${prefix})
+          AND right(n.body, ${[...suffix].length}::int) = ${suffix}
+          AND n.created_at > now() - interval '2 minutes')`;
+    await notifyUsers(rows.map((r: { id: number }) => r.id), "Lista actualizada", `${prefix}${clip(text)}${suffix}`);
+}
+
 // Push vacío: el service worker compone el texto. true = entregado.
 export async function sendPush(sub: PushSub): Promise<boolean> {
     const aud = new URL(sub.endpoint).origin;

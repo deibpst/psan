@@ -1,5 +1,6 @@
 import { sql } from "../../../lib/db";
 import { getUser, touchSession, readSessionToken } from "../../../lib/auth";
+import { notifyItemAdded } from "../../../lib/push";
 
 function listId(req: Request): number | null {
     // /api/lists/:id/items → penúltimo segmento
@@ -8,9 +9,9 @@ function listId(req: Request): number | null {
     return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-async function listExists(id: number): Promise<boolean> {
-    const rows = await sql`SELECT 1 FROM lists WHERE id = ${id}`;
-    return rows.length > 0;
+async function listName(id: number): Promise<string | null> {
+    const rows = await sql`SELECT name FROM lists WHERE id = ${id}`;
+    return rows[0]?.name ?? null;
 }
 
 // POST /api/lists/:id/items  { text }
@@ -21,7 +22,8 @@ export async function POST(req: Request) {
 
     const id = listId(req);
     if (!id) return Response.json({ error: "id inválido" }, { status: 400 });
-    if (!(await listExists(id))) return Response.json({ error: "Lista no encontrada" }, { status: 404 });
+    const name = await listName(id);
+    if (name === null) return Response.json({ error: "Lista no encontrada" }, { status: 404 });
 
     const body = (await req.json().catch(() => null)) as { text?: unknown } | null;
     if (!body || typeof body.text !== "string" || !body.text.trim()) {
@@ -32,6 +34,8 @@ export async function POST(req: Request) {
       INSERT INTO list_items (list_id, text, created_by)
       VALUES (${id}, ${body.text.trim()}, ${user.id})
       RETURNING *`;
+
+    await notifyItemAdded(user, name, item.text);
 
     return Response.json(item, { status: 201 });
 }

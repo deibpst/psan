@@ -1,8 +1,31 @@
 import { api, swr } from "/api.js";
-import { openSheet, closeSheet, confirmar, setAddAction, toast } from "/app.js";
+import { openSheet, closeSheet, confirmar, setAddAction, setLeaveGuard, toast } from "/app.js";
 import { esc } from "/views/tasks.js";
 
 let openListId = null; // lista abierta; null = índice de listas
+let emptyNew = null; // id de la lista recién creada que aún no tiene items (no se permiten listas vacías)
+
+// salir de una lista nueva sin items: quedarse o dejar que se elimine
+async function leaveEmpty() {
+    if (emptyNew === null) return true;
+    if (confirmar("Las listas vacías no se permiten.\n\nAceptar: quedarte y agregar un elemento.\nCancelar: salir y se eliminará esta lista.")) {
+        document.getElementById("new-item")?.focus();
+        return false;
+    }
+    const id = emptyNew;
+    emptyNew = null;
+    openListId = null;
+    setLeaveGuard(null);
+    await api(`/api/lists/${id}`, { method: "DELETE" }).catch(() => {});
+    return true;
+}
+
+// tocar "Listas" estando dentro de una lista: no hay hashchange, así que vuelve al índice
+export function closeList(section) {
+    if (openListId === null) return;
+    openListId = null;
+    renderLists(section);
+}
 
 export async function renderLists(section, quiet = false) {
     setAddAction(openListId !== null
@@ -41,22 +64,45 @@ function paintLists(section, lists) {
         setAddAction(() => newListSheet(section));
     }
 
-    let html = lists.map((l) => {
+    setLeaveGuard(null);
+
+    const row = (l) => {
         const done = l.items.filter((i) => i.checked).length;
-        return `<div class="list-card" data-list="${l.id}">
+        return `<div class="list-card ${l.done_at ? "done" : ""}" data-list="${l.id}">
             <span>${esc(l.name)}</span>
-            <span class="count">${done}/${l.items.length}</span>
+            <span class="end"><span class="count">${done}/${l.items.length}</span>${l.done_at ? `
+              <button class="icon-btn" data-reopen="${l.id}" aria-label="Reabrir lista">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              </button>` : ""}</span>
           </div>`;
-    }).join("");
+    };
+    const hechas = lists.filter((l) => l.done_at).sort((a, b) => new Date(b.done_at) - new Date(a.done_at));
+    let html = lists.filter((l) => !l.done_at).map(row).join("");
     html = html
         ? `<div class="group">${html}</div>`
-        : `<div class="state">
+        : lists.length ? "" : `<div class="state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                  stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
             Sin listas todavía.<br>Toca + para crear una.</div>`;
+    if (hechas.length) {
+        html += `<details class="hechas"><summary>Hechas (${hechas.length})</summary><div class="group">${hechas.map(row).join("")}</div></details>`;
+    }
     section.innerHTML = `<h1 class="large-title">Listas</h1>` + html;
 
-    section.onclick = (e) => {
+    section.onclick = async (e) => {
+        const re = e.target.closest("[data-reopen]");
+        if (re) {
+            re.disabled = true;
+            try {
+                await api(`/api/lists/${re.dataset.reopen}`, { method: "PATCH", body: { done: false } });
+                await renderLists(section, true);
+                toast("Lista reabierta");
+            } catch {
+                re.disabled = false;
+                toast("No se pudo reabrir la lista");
+            }
+            return;
+        }
         const card = e.target.closest("[data-list]");
         if (!card) return;
         openListId = Number(card.dataset.list);
@@ -83,6 +129,7 @@ function newListSheet(section) {
             const created = await api("/api/lists", { method: "POST", body: { name } });
             closeSheet();
             openListId = created.id;
+            emptyNew = created.id;
             // caché de /api/lists aún no tiene la lista nueva: refresco quiet pega al server
             renderLists(section, true);
         } catch {
@@ -93,25 +140,53 @@ function newListSheet(section) {
 }
 
 function renderItems(section, list) {
+    const ro = !!list.done_at; // lista hecha: solo lectura hasta reabrirla
+    if (list.items.length) { // ya tiene items: deja de ser "nueva"
+        if (emptyNew === list.id) emptyNew = null;
+    }
+    setLeaveGuard(emptyNew === list.id ? leaveEmpty : null);
+    setAddAction(ro ? null : () => section.querySelector("#new-item")?.focus());
+
     const rows = list.items.map((i) => `
         <div class="item-row">
-          <input type="checkbox" id="chk-${i.id}" data-item="${i.id}" ${i.checked ? "checked" : ""}>
+          <input type="checkbox" id="chk-${i.id}" data-item="${i.id}" ${i.checked ? "checked" : ""} ${ro ? "disabled" : ""}>
           <label class="txt ${i.checked ? "checked" : ""}" for="chk-${i.id}">${esc(i.text)}</label>
-          <button class="del" data-del="${i.id}" aria-label="Eliminar ${esc(i.text)}">✕</button>
+          ${ro ? "" : `<button class="del" data-del="${i.id}" aria-label="Eliminar ${esc(i.text)}">✕</button>`}
         </div>`).join("");
 
     section.innerHTML = `
       <button class="btn-ghost" id="back">‹ Listas</button>
       <h1 class="large-title">${esc(list.name)}</h1>
       ${rows ? `<div class="group">${rows}</div>` : `<div class="state">Lista vacía, agrega algo abajo</div>`}
-      <form class="quickadd" id="quickadd">
+      ${ro ? "" : `<form class="quickadd" id="quickadd">
         <input type="text" id="new-item" placeholder="Agregar…" aria-label="Nuevo elemento">
         <button class="btn" type="submit">+</button>
-      </form>`;
+      </form>`}
+      <button class="btn btn-danger del-list" id="del-list">Eliminar lista</button>`;
 
-    section.querySelector("#back").onclick = () => { openListId = null; renderLists(section); };
+    section.querySelector("#back").onclick = async () => {
+        if (!(await leaveEmpty())) return;
+        openListId = null;
+        renderLists(section);
+    };
+    if (emptyNew === list.id) section.querySelector("#new-item")?.focus();
 
-    section.querySelector("#quickadd").onsubmit = async (e) => {
+    section.querySelector("#del-list").onclick = async (e) => {
+        if (!confirmar(`¿Eliminar la lista "${list.name}" y sus ${list.items.length} elementos?`)) return;
+        e.target.disabled = true;
+        try {
+            await api(`/api/lists/${list.id}`, { method: "DELETE" });
+            emptyNew = null;
+            openListId = null;
+            await renderLists(section, true);
+            toast("Lista eliminada");
+        } catch {
+            e.target.disabled = false;
+            toast("No se pudo eliminar la lista");
+        }
+    };
+
+    if (!ro) section.querySelector("#quickadd").onsubmit = async (e) => {
         e.preventDefault();
         const form = e.target;
         const input = form.querySelector("#new-item");
@@ -144,6 +219,16 @@ function renderItems(section, list) {
                 method: "PATCH",
                 body: { item_id: Number(id), checked },
             });
+            if (checked && !ro && [...section.querySelectorAll("[data-item]")].every((c) => c.checked)
+                && confirmar("¿Marcar la lista como hecha?")) {
+                try {
+                    await api(`/api/lists/${list.id}`, { method: "PATCH", body: { done: true } });
+                    openListId = null;
+                    toast("Lista hecha");
+                } catch {
+                    toast("No se pudo marcar la lista como hecha");
+                }
+            }
             await renderLists(section, true);
             section.querySelector(`#chk-${id}`)?.focus(); // el repintado recrea el checkbox
         } catch {

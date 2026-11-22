@@ -1,4 +1,4 @@
-import { sql } from "../lib/db";
+import { sql } from "../db";
 
 // POST /api/notifications  { endpoint }: entrega y marca los avisos pendientes de ese
 // dispositivo. Sin sesión a propósito: el service worker corre con la sesión caducada

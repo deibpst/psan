@@ -2,12 +2,32 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <title>psan</title>
-  <meta name="theme-color" content="#EEF2FF">
+  <meta name="theme-color" content="#FFFFFF">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/psan.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/pwa-icon-180.png">
+  <script>
+    // Tema: se aplica antes de pintar (sin parpadeo). Preferencia guardada: "light" | "dark"; sin guardar = "system".
+    // El landing (cualquier ruta distinta de /app) siempre va en claro.
+    (() => {
+      const mq = matchMedia("(prefers-color-scheme: dark)");
+      const get = () => { try { const v = localStorage.getItem("psan-theme"); return v === "light" || v === "dark" ? v : "system"; } catch { return "system"; } };
+      const apply = () => {
+        const pref = get();
+        const dark = location.pathname === "/app" && (pref === "dark" || (pref === "system" && mq.matches));
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#000000" : "#FFFFFF");
+      };
+      mq.addEventListener("change", apply);
+      window.psanTheme = {
+        get,
+        set(v) { try { v === "system" ? localStorage.removeItem("psan-theme") : localStorage.setItem("psan-theme", v); } catch {} apply(); },
+      };
+      apply();
+    })();
+  </script>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -151,6 +171,12 @@
             <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
           </svg>
         </button>
+        <button id="theme-btn" class="icon-btn" type="button" aria-label="Apariencia">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/>
+          </svg>
+        </button>
         <button id="logout" class="icon-btn" type="button" aria-label="Cerrar sesión">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -168,6 +194,7 @@
     </main>
 
     <nav class="tabbar" aria-label="Navegación principal">
+      <span class="tab-pill" aria-hidden="true"></span>
       <a href="#tareas" data-tab="tareas">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

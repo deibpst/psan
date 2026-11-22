@@ -2,7 +2,7 @@ import { api } from "/api.js";
 import { renderLogin } from "/views/login.js";
 import { renderTasks } from "/views/tasks.js";
 import { renderCalendar } from "/views/calendar.js";
-import { renderLists } from "/views/lists.js";
+import { renderLists, closeList } from "/views/lists.js";
 
 // ponytail: familia fija de 3, hardcodeada. Si crece → endpoint /api/users.
 export const MEMBERS = [
@@ -64,16 +64,35 @@ const backdrop = document.getElementById("sheet-backdrop");
 const sheetEl = document.getElementById("sheet");
 
 export function openSheet(html) {
-    sheetEl.innerHTML = html;
+    sheetEl.innerHTML = `<button type="button" class="sheet-grab" aria-label="Cerrar"></button>${html}`;
     backdrop.hidden = false;
-    sheetEl.querySelector("input, textarea, button")?.focus();
+    document.documentElement.classList.add("sheet-open"); // congela la página de atrás
     return sheetEl;
 }
+
+// Teclado en pantalla: el visual viewport se encoge y puede desplazarse (iOS no toca el layout viewport).
+// Se publica el alto visible y cuánto tapa el teclado; el backdrop cubre todo el layout y el sheet se estira bajo el teclado.
+const vv = window.visualViewport;
+if (vv) {
+    const syncViewport = () => {
+        const s = document.documentElement.style;
+        s.setProperty("--vvh", `${vv.height}px`);
+        s.setProperty("--kb", `${Math.max(0, innerHeight - vv.height - vv.offsetTop)}px`);
+    };
+    vv.addEventListener("resize", syncViewport);
+    vv.addEventListener("scroll", syncViewport);
+}
 export function closeSheet() {
+    sheetEl.classList.remove("kb");
+    document.documentElement.classList.remove("sheet-open");
     backdrop.hidden = true;
     sheetEl.innerHTML = "";
 }
-backdrop.addEventListener("click", (e) => { if (e.target === backdrop) closeSheet(); });
+// "Teclado visible" = hay un campo enfocado; solo entonces el sheet puede hacer scroll (.kb)
+const isField = (el) => !!el?.matches?.("input, textarea, select");
+sheetEl.addEventListener("focusin", (e) => sheetEl.classList.toggle("kb", isField(e.target)));
+sheetEl.addEventListener("focusout", (e) => { if (!isField(e.relatedTarget)) sheetEl.classList.remove("kb"); });
+backdrop.addEventListener("click", (e) => { if (e.target === backdrop || e.target.closest(".sheet-grab")) closeSheet(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet(); });
 
 // confirm nativo con texto en español; suficiente y accesible
@@ -102,6 +121,19 @@ export function setAddAction(fn) {
     addBtn.onclick = fn ?? null;
 }
 
+// ===== Pill de la barra: se coloca bajo la pestaña activa (inset 8px por lado, 4px arriba y abajo) =====
+const pill = document.querySelector(".tab-pill");
+function movePill() {
+    const a = document.querySelector(".tabbar a.active");
+    if (!a || !a.offsetWidth) return; // barra oculta: no hay medidas
+    pill.style.width = `${a.offsetWidth - 16}px`;
+    pill.style.height = `${a.offsetHeight - 8}px`;
+    pill.style.transform = `translate(${a.offsetLeft + 8}px, ${a.offsetTop + 4}px)`;
+    // la primera posición va sin animación; desde el siguiente frame ya anima
+    requestAnimationFrame(() => pill.classList.add("ready"));
+}
+window.addEventListener("resize", movePill);
+
 // ===== Router =====
 const views = { tareas: renderTasks, calendario: renderCalendar, listas: renderLists };
 
@@ -111,11 +143,27 @@ function route() {
     if (!views[name]) { location.hash = "tareas"; return; }
     for (const el of document.querySelectorAll("#main > section")) el.hidden = true;
     for (const a of document.querySelectorAll(".tabbar a")) a.classList.toggle("active", a.dataset.tab === name);
+    movePill();
     const section = document.getElementById(`view-${name}`);
     section.hidden = false;
     views[name](section);
 }
 window.addEventListener("hashchange", route);
+// Una vista puede frenar la salida (p. ej. lista nueva sin items): fn async → true deja salir
+let leaveGuard = null;
+export const setLeaveGuard = (fn) => { leaveGuard = fn; };
+document.querySelector(".tabbar").addEventListener("click", async (e) => {
+    const a = e.target.closest("a");
+    if (!a || !leaveGuard) return;
+    e.preventDefault();
+    e.stopPropagation(); // que no llegue al listener de abajo ni al hash por defecto
+    if (!(await leaveGuard())) return;
+    if (location.hash === a.hash) { if (a.dataset.tab === "listas") closeList(document.getElementById("view-listas")); }
+    else location.hash = a.hash;
+}, true);
+document.querySelector('.tabbar a[data-tab="listas"]').addEventListener("click", () => {
+    if (location.hash === "#listas") closeList(document.getElementById("view-listas"));
+});
 
 // refresco al volver a la pestaña
 document.addEventListener("visibilitychange", () => {
@@ -124,7 +172,31 @@ document.addEventListener("visibilitychange", () => {
 
 // ===== Sesión =====
 
+// Apariencia: sheet con Claro / Oscuro / Sistema; el cambio se ve al instante
+document.getElementById("theme-btn").addEventListener("click", () => {
+    const cur = window.psanTheme.get();
+    const el = openSheet(`
+      <h2>Apariencia</h2>
+      <div class="field"><label>Tema</label>
+        <div class="seg" id="t-seg">
+          ${[["light", "Claro"], ["dark", "Oscuro"], ["system", "Sistema"]].map(([k, v]) =>
+            `<button type="button" data-t="${k}" class="${k === cur ? "selected" : ""}" aria-pressed="${k === cur}">${v}</button>`).join("")}
+        </div></div>
+      <div class="sheet-actions"><button class="btn" id="t-done">Listo</button></div>`);
+    el.querySelector("#t-seg").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        window.psanTheme.set(b.dataset.t);
+        for (const x of el.querySelectorAll("#t-seg button")) {
+            x.classList.toggle("selected", x === b);
+            x.setAttribute("aria-pressed", String(x === b));
+        }
+    };
+    el.querySelector("#t-done").onclick = closeSheet;
+});
+
 document.getElementById("logout").addEventListener("click", async (e) => {
+    if (!confirmar("¿Cerrar sesión?")) return;
     const btn = e.currentTarget;
     btn.disabled = true;
     try {

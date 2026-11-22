@@ -1,6 +1,13 @@
 {
   "bunVersion": "1.x",
-  "rewrites": [{ "source": "/app", "destination": "/index.html" }],
+  "rewrites": [
+    { "source": "/app", "destination": "/index.html" },
+    { "source": "/api/health", "destination": "/api/hub?op=health" },
+    { "source": "/api/login", "destination": "/api/hub?op=login" },
+    { "source": "/api/logout", "destination": "/api/hub?op=logout" },
+    { "source": "/api/me", "destination": "/api/hub?op=me" },
+    { "source": "/api/notifications", "destination": "/api/hub?op=notifications" }
+  ],
   "crons": [
     {
       "path": "/api/cron/notify",

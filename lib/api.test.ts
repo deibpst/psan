@@ -1,15 +1,16 @@
 import { test, expect, beforeAll, afterAll } from "bun:test";
-import { sql, migrate } from "../lib/db";
-import { createSession, TIMEOUT_MINUTES } from "../lib/auth";
-import { clip, reminder } from "../lib/push";
-import * as tasksIndex from "./tasks/index";
-import * as taskById from "./tasks/[id]";
-import * as listsIndex from "./lists/index";
-import * as listItems from "./lists/[id]/items";
-import * as push from "./push";
-import * as cronNotify from "./cron/notify";
-import * as notifications from "./notifications";
-import * as me from "./me";
+import { sql, migrate } from "./db";
+import { createSession, TIMEOUT_MINUTES } from "./auth";
+import { clip, reminder } from "./push";
+import * as tasksIndex from "../api/tasks/index";
+import * as taskById from "../api/tasks/[id]";
+import * as listsIndex from "../api/lists/index";
+import * as listItems from "../api/lists/[id]/items";
+import * as listById from "../api/lists/[id]";
+import * as push from "../api/push";
+import * as cronNotify from "../api/cron/notify";
+import * as notifications from "./handlers/notifications";
+import * as me from "./handlers/me";
 
 let userId: number;
 let cookie: string;
@@ -385,3 +386,136 @@ test("lists: crear lista, agregar/palomear/borrar items", async () => {
     );
     expect(notFound.status).toBe(404);
 });
+
+test("lists: eliminar lista con items", async () => {
+    const list = await json(await listsIndex.POST(
+        req("/api/lists", { method: "POST", body: JSON.stringify({ name: "Borrar" }) })
+    ));
+    await listItems.POST(
+        req(`/api/lists/${list.id}/items`, { method: "POST", body: JSON.stringify({ text: "a" }) })
+    );
+
+    expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }, false))).status).toBe(401);
+    expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }))).status).toBe(200);
+
+    const all = await json(await listsIndex.GET(req("/api/lists")));
+    expect(all.some((l: any) => l.id === list.id)).toBe(false);
+    const left = await sql`SELECT 1 FROM list_items WHERE list_id = ${list.id}`;
+    expect(left.length).toBe(0);
+
+    expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }))).status).toBe(404);
+    expect((await listById.DELETE(req(`/api/lists/abc`, { method: "DELETE" }))).status).toBe(400);
+});
+
+test("lists: marcar hecha y reabrir", async () => {
+    const list = await json(await listsIndex.POST(
+        req("/api/lists", { method: "POST", body: JSON.stringify({ name: "Hecha" }) })
+    ));
+    const patch = (id: unknown, body: unknown, auth = true) =>
+        listById.PATCH(req(`/api/lists/${id}`, { method: "PATCH", body: JSON.stringify(body) }, auth));
+
+    expect((await patch(list.id, { done: true }, false)).status).toBe(401);
+    expect((await patch(list.id, {})).status).toBe(400);
+    expect((await patch("abc", { done: true })).status).toBe(400);
+    expect((await patch(999999, { done: true })).status).toBe(404);
+
+    const done = await json(await patch(list.id, { done: true }));
+    expect(done.done_at).not.toBeNull();
+    const all = await json(await listsIndex.GET(req("/api/lists")));
+    expect(all.find((l: any) => l.id === list.id).done_at).not.toBeNull();
+
+    const reopened = await json(await patch(list.id, { done: false }));
+    expect(reopened.done_at).toBeNull();
+
+    await sql`DELETE FROM lists WHERE id = ${list.id}`;
+});
+
+// ---------- avisos de listas ----------
+
+// user2 con un dispositivo suscrito; user1 (quien actúa) con otro: no debe recibir nada
+const notifyEp = { u1: `https://example.com/psan-test-${crypto.randomUUID()}`, u2: `https://example.com/psan-test-${crypto.randomUUID()}` };
+const pending = async (ep: string) => (await json(await notifications.POST(
+    req("/api/notifications", { method: "POST", body: JSON.stringify({ endpoint: ep }) }, false)))) as { title: string; body: string }[];
+
+async function subscribeBoth() {
+    for (const [uid, ep] of [[userId, notifyEp.u1], [userId2, notifyEp.u2]] as const) {
+        await sql`INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (${uid}, ${ep}, 't', 't') ON CONFLICT DO NOTHING`;
+    }
+}
+
+test("avisos de listas: crear lista avisa a los demás, no a quien la crea", async () => {
+    await subscribeBoth();
+    const name = `Aviso-${crypto.randomUUID().slice(0, 6)}`;
+    const list = await json(await listsIndex.POST(req("/api/lists", { method: "POST", body: JSON.stringify({ name }) })));
+    const rows = (await pending(notifyEp.u2)).filter((n) => n.body.endsWith(name));
+    expect(rows.length).toBe(1);
+    expect(rows[0]!.title).toBe("Nueva lista");
+    expect(rows[0]!.body).toMatch(/^test-.* creó la lista: /);
+    expect((await pending(notifyEp.u1)).length).toBe(0);
+    await sql`DELETE FROM lists WHERE id = ${list.id}`;
+});
+
+test("avisos de listas: agregar item avisa y agrupa ráfagas", async () => {
+    await subscribeBoth();
+    const name = `Aviso-${crypto.randomUUID().slice(0, 6)}`;
+    const list = await json(await listsIndex.POST(req("/api/lists", { method: "POST", body: JSON.stringify({ name }) })));
+    await pending(notifyEp.u2); // descarta el aviso de "Nueva lista"
+
+    const add = (text: string, cookieOverride?: string) => listItems.POST(req(`/api/lists/${list.id}/items`, {
+        method: "POST", body: JSON.stringify({ text }), ...(cookieOverride ? { headers: { cookie: cookieOverride } } : {}),
+    }));
+    for (const t of ["Leche", "Huevos", "Pan"]) expect((await add(t)).status).toBe(201);
+
+    // 3 items seguidos = 1 solo aviso, con el primer item
+    const rows = await pending(notifyEp.u2);
+    expect(rows.length).toBe(1);
+    expect(rows[0]!.title).toBe("Lista actualizada");
+    expect(rows[0]!.body).toMatch(new RegExp(`^test-.* agregó Leche a: ${name}$`));
+    expect((await pending(notifyEp.u1)).length).toBe(0);
+
+    // otra persona agregando a la misma lista sí avisa (a user1)
+    await add("Sal", cookie2);
+    const u1rows = await pending(notifyEp.u1);
+    expect(u1rows.length).toBe(1);
+    expect(u1rows[0]!.body).toMatch(new RegExp(`^test-.*-b agregó Sal a: ${name}$`));
+    await sql`DELETE FROM list_items WHERE list_id = ${list.id}`;
+    await sql`DELETE FROM lists WHERE id = ${list.id}`;
+});
+
+test("avisos de listas: marcar terminada avisa; reabrir no", async () => {
+    await subscribeBoth();
+    const name = `Aviso-${crypto.randomUUID().slice(0, 6)}`;
+    const list = await json(await listsIndex.POST(req("/api/lists", { method: "POST", body: JSON.stringify({ name }) })));
+    await pending(notifyEp.u2);
+
+    const patch = (done: boolean) => listById.PATCH(req(`/api/lists/${list.id}`, { method: "PATCH", body: JSON.stringify({ done }) }));
+    await patch(true);
+    const rows = await pending(notifyEp.u2);
+    expect(rows.length).toBe(1);
+    expect(rows[0]!.title).toBe("Lista terminada");
+    expect(rows[0]!.body).toMatch(new RegExp(`^test-.* marcó como terminada la lista: ${name}$`));
+    expect((await pending(notifyEp.u1)).length).toBe(0);
+
+    await patch(false); // reabrir: en silencio
+    expect((await pending(notifyEp.u2)).length).toBe(0);
+    await sql`DELETE FROM lists WHERE id = ${list.id}`;
+});
+
+test("avisos de listas: eliminar avisa a los demás con el nombre", async () => {
+    await subscribeBoth();
+    const name = `Aviso-${crypto.randomUUID().slice(0, 6)}`;
+    const list = await json(await listsIndex.POST(req("/api/lists", { method: "POST", body: JSON.stringify({ name }) })));
+    await pending(notifyEp.u2);
+
+    expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }))).status).toBe(200);
+    const rows = await pending(notifyEp.u2);
+    expect(rows.length).toBe(1);
+    expect(rows[0]!.title).toBe("Lista eliminada");
+    expect(rows[0]!.body).toMatch(new RegExp(`^test-.* eliminó la lista: ${name}$`));
+    expect((await pending(notifyEp.u1)).length).toBe(0);
+
+    // lista inexistente: sin aviso
+    expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }))).status).toBe(404);
+    expect((await pending(notifyEp.u2)).length).toBe(0);
+});
+

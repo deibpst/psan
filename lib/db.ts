@@ -78,6 +78,7 @@ export async function migrate() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT now()
       )`;
 
+    await sql`ALTER TABLE lists ADD COLUMN IF NOT EXISTS done_at TIMESTAMPTZ`;
     await sql`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS recurrence TEXT`;
 
     // Multi-asignación: assignees reemplaza a assigned_to (la columna vieja

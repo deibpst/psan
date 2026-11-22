@@ -1,23 +1,29 @@
 /* ===== Fuente (autoalojada, latin) ===== */
 @font-face {
-  font-family: "Inter";
-  src: url("/fonts/inter-var.woff2") format("woff2");
-  font-weight: 100 900;
+  font-family: "DM Sans";
+  src: url("/fonts/dm-sans-var.woff2") format("woff2");
+  font-weight: 100 1000;
   font-style: normal;
   font-display: swap;
 }
 
-/* ===== Tokens (solo claro) ===== */
-:root {
-  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+/* ===== Tokens =====
+   Claro en :root y [data-theme="light"]; oscuro en [data-theme="dark"] (lo pone el script de index.html).
+   Los componentes solo usan var(--token). */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --font: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --t: 0.18s;
-  /* esquinas anidadas: radio interno = externo − separación */
-  /* radio uniforme en todo el landing y la app */
-  --r-lg: var(--r-sm);
-  --r: var(--r-sm);
-  --r-md: var(--r-sm);
+  /* escala concéntrica: radio interno = radio externo − padding (mínimo 8px).
+     sheet 28 → campos y botones 12 (padding 16); .group 20 con las filas a sangre (las recorta la card) */
   --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-nav: 16px; /* pill de la barra de pestañas, igual en celular y escritorio */
+  --r: var(--r-sm); /* legado: tarjetas del landing */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -28,15 +34,14 @@
 
   --text: #0F172A;
   /* slate 900 */
-  --text-dim: #64748B;
-  /* slate 500, 4.7:1 sobre blanco */
-  --accent: #4F46E5;
-  --accent-strong: #4338CA;
+  --text-dim: #5A6A80; /* 5.0:1 sobre la página gris, 5.5:1 sobre blanco */
+  --accent: #D80073; /* rosa mexicano, 4.6:1 sobre la página gris y sobre blanco */
+  --accent-strong: #AD005C;
   --on-accent: #FFFFFF;
   --primary: #0F172A;
   /* botones principales: negro, como el landing */
   --primary-hover: #1E293B;
-  --ring: 0 0 0 3px rgb(79 70 229 / 0.25);
+  --ring: 0 0 0 3px rgb(216 0 115 / 0.25);
 
   /* vidrio */
   --glass: rgb(255 255 255 / 0.62);
@@ -46,19 +51,104 @@
   --shadow-hover: 0 12px 40px rgb(15 23 42 / 0.12);
   --surface-2: rgb(15 23 42 / 0.05);
   --border: rgb(15 23 42 / 0.08);
-  --tint-alpha: 8%;
+  --tint-alpha: 12%;
 
   /* urgencia */
-  --u-red: #DC2626;
-  --u-yellow: #D97706;
-  --u-green: #16A34A;
-  --u-blue: #64809E;
+  --u-red: #E5002B;
+  --u-yellow: #DE7800; /* 3 días: naranja vivo (un amarillo puro no llega a 3:1 sobre blanco) */
+  --u-green: #009F3B;
+  --u-blue: #4F7DB0;
   --u-blue-faint: #94A9BE;
 
   /* miembros */
   --m-deib: #7C3AED;
-  --m-papa: #EA580C;
-  --m-mama: #DB2777;
+  --m-papa: #CF4700;
+  --m-mama: #A65E50; /* rose gold, el más claro que da 4.5:1 con texto blanco */
+
+  /* barra superior */
+  --chrome: #FFFFFF; /* header sólido; igual al theme-color de index.html. iOS pinta su barra de estado blanca (claro) o negra (oscuro) */
+
+  /* superficies y texto sobre ellas */
+  --surface: #FFFFFF; /* solo landing */
+  --bg: #F4F4F6;
+  --card: #FFFFFF;
+  --sheet: #FFFFFF;
+  --field: #F4F4F6;
+  --seg-track: #E9E9ED;
+  --seg-on: #FFFFFF;
+  --on-color: #FFFFFF;
+  --on-primary: #FFFFFF;
+  --scrim: rgb(15 23 42 / 0.35);
+  --ink-a09: rgb(15 23 42 / 0.09);
+  --ink-a10: rgb(15 23 42 / 0.1);
+  --accent-a05: rgb(216 0 115 / 0.05);
+  --accent-a08: rgb(216 0 115 / 0.08);
+  --accent-a10: rgb(216 0 115 / 0.1);
+  --danger-strong: #BF0022;
+  --danger-a08: rgb(229 0 43 / 0.08);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230F172A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
+  /* sombras (se eliminan en la fase de superficies planas) */
+  --shadow-hero: 0 4px 16px rgb(0 0 0 / 0.25);
+  --shadow-hero-hover: 0 8px 24px rgb(0 0 0 / 0.3);
+
+  /* sobre fotos (landing y login): fijos, no cambian con el tema */
+  --on-image: #FFFFFF;
+  --on-image-88: rgb(255 255 255 / 0.88);
+  --on-image-85: rgb(255 255 255 / 0.85);
+  --on-image-75: rgb(255 255 255 / 0.75);
+  --on-image-70: rgb(255 255 255 / 0.7);
+  --hero-scrim: linear-gradient(180deg, rgb(15 23 42 / 0.30), rgb(15 23 42 / 0.45));
+  --product-scrim: linear-gradient(180deg, rgb(15 23 42 / 0.35), rgb(15 23 42 / 0.5));
+}
+
+/* Oscuro: estado y miembros muy vivos; contraste verificado con script (WCAG AA) */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --text: #F2F2F5;
+  --text-dim: #9B9BA8;
+  --accent: #FF4DA6;
+  --accent-strong: #FF80BF;
+  --on-accent: #12000A;
+  --primary: #F2F2F5;
+  --primary-hover: #FFFFFF;
+  --on-primary: #0B0B0F;
+  --ring: 0 0 0 3px rgb(255 77 166 / 0.4);
+
+  --surface-2: rgb(255 255 255 / 0.06);
+  --border: rgb(255 255 255 / 0.1);
+  --bg: #000000;
+  --card: #101012;
+  --sheet: #1A1A1F;
+  --field: #26262C;
+  --seg-track: #26262C;
+  --seg-on: #3A3A42;
+  --tint-alpha: 16%;
+
+  --u-red: #FF4D5E;
+  --u-yellow: #FFC400;
+  --u-green: #2EE672;
+  --u-blue: #7AA7DB;
+  --u-blue-faint: #6B7C8F;
+
+  --on-color: #14141C;
+  --m-deib: #A78BFA;
+  --m-papa: #FF8A3D;
+  --m-mama: #E0A896;
+
+  --chrome: #000000;
+
+  --scrim: rgb(0 0 0 / 0.6);
+  --ink-a09: rgb(255 255 255 / 0.09);
+  --ink-a10: rgb(255 255 255 / 0.1);
+  --accent-a05: rgb(255 77 166 / 0.08);
+  --accent-a08: rgb(255 77 166 / 0.12);
+  --accent-a10: rgb(255 77 166 / 0.16);
+  --danger-strong: #FF6B78;
+  --danger-a08: rgb(255 77 94 / 0.14);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23F2F2F5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
 }
 
 /* ===== Base ===== */
@@ -76,11 +166,7 @@ body {
   font-size: 16px;
   color: var(--text);
   min-height: 100dvh;
-  background:
-    radial-gradient(600px 400px at 85% -5%, rgb(79 70 229 / 0.10), transparent 70%),
-    radial-gradient(700px 500px at -10% 100%, rgb(14 165 233 / 0.10), transparent 70%),
-    linear-gradient(160deg, #EEF2FF, #FFFFFF 45%, #E0F2FE);
-  background-attachment: fixed;
+  background: var(--bg);
 }
 
 button {
@@ -104,30 +190,6 @@ select {
   box-shadow: var(--ring);
 }
 
-/* receta de vidrio */
-.header,
-.tabbar,
-.group,
-.sheet,
-.seg,
-.quickadd input,
-.state .btn,
-.toast {
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-}
-
-@supports not (backdrop-filter: blur(20px)) {
-
-  .header,
-  .tabbar,
-  .group,
-  .sheet,
-  .toast {
-    background: rgb(255 255 255 / 0.92) !important;
-  }
-}
-
 /* ===== Header ===== */
 .header {
   position: sticky;
@@ -138,8 +200,8 @@ select {
   justify-content: space-between;
   padding: var(--space-2) var(--space-4);
   padding-top: calc(var(--space-2) + env(safe-area-inset-top));
-  background: var(--glass);
-  border-bottom: 1px solid var(--glass-border);
+  background: var(--chrome);
+  border-bottom: 1px solid var(--border);
 }
 
 /* ícono siempre al desnudo: sin margen, fondo, sombra ni radio */
@@ -147,6 +209,13 @@ select {
   display: block;
   width: 32px;
   height: 32px;
+}
+
+/* el trazo del logo es negro: en oscuro se invierte para que no desaparezca */
+[data-theme="dark"] .header-brand,
+[data-theme="dark"] .split-brand img,
+[data-theme="dark"] .boot img {
+  filter: invert(1);
 }
 
 .header-actions {
@@ -200,7 +269,7 @@ select {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  color: #fff;
+  color: var(--on-color);
   font-weight: 600;
   font-size: 0.8rem;
   background: var(--m-deib);
@@ -219,7 +288,7 @@ select {
 }
 
 .avatar-stack .avatar {
-  border: 2px solid #fff;
+  border: 2px solid var(--card);
 }
 
 .avatar-stack .avatar+.avatar {
@@ -242,12 +311,14 @@ select {
   right: 0;
   z-index: 10;
   display: flex;
-  background: var(--glass);
-  border-top: 1px solid var(--glass-border);
+  background: var(--chrome);
+  border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
 }
 
 .tabbar a {
+  position: relative; /* sobre el pill */
+  z-index: 1;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -259,29 +330,46 @@ select {
   color: var(--text-dim);
   font-size: 10.5px;
   font-weight: 600;
-  transition: color var(--t) var(--ease);
+  -webkit-tap-highlight-color: transparent; /* sin destello gris del navegador al tocar */
+  -webkit-touch-callout: none; /* sin menú de enlace al mantener presionado en iOS */
+  user-select: none;
+  transition: color var(--t) var(--ease), transform var(--t) var(--ease);
 }
 
 .tabbar a svg {
   box-sizing: content-box;
   padding: 3px 14px;
-  border-radius: 999px;
-  transition: background var(--t) var(--ease), color var(--t) var(--ease), transform var(--t) var(--ease);
-}
-
-@media (hover: hover) {
-  .tabbar a:hover svg {
-    transform: translateY(-1px);
-  }
 }
 
 .tabbar a.active {
-  color: var(--accent);
+  color: var(--on-accent);
 }
 
-.tabbar a.active svg {
+/* mantener presionado: el contenido se encoge un poco, el pill no se mueve */
+.tabbar a:active {
+  transform: scale(0.94);
+}
+
+/* pill morado que abarca ícono + texto y barre hacia la pestaña activa (posición y medidas las pone app.js; sirve en barra inferior y lateral) */
+.tab-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-radius: var(--r-nav);
   background: var(--accent);
-  color: var(--on-accent);
+  pointer-events: none;
+}
+
+.tab-pill.ready {
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-pill.ready {
+    transition: none;
+  }
 }
 
 /* ===== Landing ===== */
@@ -321,7 +409,7 @@ a.btn {
   gap: var(--space-2);
   padding: var(--space-4) var(--space-5);
   padding-top: calc(var(--space-4) + env(safe-area-inset-top));
-  color: #fff;
+  color: var(--on-image);
 }
 
 
@@ -334,7 +422,7 @@ a.btn {
   min-height: 100dvh;
   padding: var(--space-6) var(--space-5);
   text-align: center;
-  color: #fff;
+  color: var(--on-image);
 }
 
 .hero::before {
@@ -351,7 +439,7 @@ a.btn {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.30), rgb(15 23 42 / 0.45));
+  background: var(--hero-scrim);
 }
 
 .hero-content {
@@ -376,7 +464,7 @@ a.btn {
   font-size: 17px;
   font-weight: 500;
   line-height: 1.5;
-  color: rgb(255 255 255 / 0.88);
+  color: var(--on-image-88);
   margin: 0;
   max-width: 420px;
   text-wrap: balance;
@@ -385,7 +473,7 @@ a.btn {
 .hero-more {
   font-size: 15px;
   font-weight: 400;
-  color: rgb(255 255 255 / 0.75);
+  color: var(--on-image-75);
   max-width: 460px;
 }
 
@@ -399,19 +487,19 @@ a.btn {
   padding: var(--space-2) var(--space-5);
   border: none;
   border-radius: var(--r-md);
-  background: #fff;
+  background: var(--on-image);
   color: var(--primary);
   font-size: 16px;
   font-weight: 600;
   text-decoration: none;
-  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
+  box-shadow: var(--shadow-hero);
   transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 
 @media (hover: hover) {
   .btn-hero:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
+    box-shadow: var(--shadow-hero-hover);
   }
 }
 
@@ -423,7 +511,7 @@ a.btn {
   position: absolute;
   bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
   z-index: 1;
-  color: rgb(255 255 255 / 0.7);
+  color: var(--on-image-70);
   animation: hint 1.8s var(--ease) infinite;
 }
 
@@ -442,7 +530,7 @@ a.btn {
 /* características: blanco, aire, tres tarjetas */
 .features {
   padding: calc(var(--space-6) * 2) var(--space-5);
-  background: #fff;
+  background: var(--surface);
   text-align: center;
 }
 
@@ -522,7 +610,7 @@ a.btn {
   place-items: center;
   min-height: 100dvh;
   padding: calc(var(--space-6) * 2) var(--space-5);
-  color: #fff;
+  color: var(--on-image);
 }
 
 .product::before {
@@ -538,7 +626,7 @@ a.btn {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.35), rgb(15 23 42 / 0.5));
+  background: var(--product-scrim);
 }
 
 .product-content {
@@ -575,7 +663,7 @@ a.btn {
 .product-list dd {
   font-size: 15px;
   line-height: 1.55;
-  color: rgb(255 255 255 / 0.85);
+  color: var(--on-image-85);
   margin: 0;
   max-width: 480px;
 }
@@ -586,7 +674,7 @@ a.btn {
   align-items: center;
   justify-content: center;
   padding: var(--space-6) var(--space-5);
-  background: #fff;
+  background: var(--surface);
   border-top: 1px solid var(--border);
 }
 
@@ -627,7 +715,7 @@ a.btn {
   margin: 0;
   padding: 0 var(--space-5);
   text-align: center;
-  color: #fff;
+  color: var(--on-image);
   font-weight: 600;
   font-size: 22px;
   line-height: 1.25;
@@ -643,7 +731,7 @@ a.btn {
   gap: var(--space-4);
   padding: var(--space-6) var(--space-5);
   padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
-  background: #fff;
+  background: var(--card);
   text-align: center;
 }
 
@@ -688,9 +776,9 @@ a.btn {
   padding: var(--space-2) calc(var(--space-3) * 2 + 18px) var(--space-2) var(--space-3);
   appearance: none;
   -webkit-appearance: none;
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--r-md);
-  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230F172A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right var(--space-3) center;
+  background: var(--field) var(--select-arrow) no-repeat right var(--space-3) center;
   background-size: 18px;
   color: var(--text);
   font-size: 16px;
@@ -716,9 +804,9 @@ a.btn {
   text-align: center;
   font-size: 24px;
   font-weight: 600;
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--r-md);
-  background: #fff;
+  background: var(--field);
   color: var(--text);
   caret-color: var(--accent);
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
@@ -737,10 +825,9 @@ a.btn {
   width: 56px;
   height: 56px;
   border: none;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   background: var(--primary);
-  color: #fff;
-  box-shadow: 0 4px 16px rgb(15 23 42 / 0.25);
+  color: var(--on-primary);
   animation: rise 0.18s var(--ease);
   transition: background var(--t) var(--ease), transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
@@ -749,7 +836,6 @@ a.btn {
   .login-go:hover {
     background: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgb(15 23 42 / 0.3);
   }
 }
 
@@ -825,10 +911,9 @@ a.btn {
   border: none;
   border-radius: var(--r-md);
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
   font-size: 16px;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgb(15 23 42 / 0.25);
   transition: background var(--t) var(--ease), transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 
@@ -836,7 +921,6 @@ a.btn {
   .btn:hover {
     background: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgb(15 23 42 / 0.3);
   }
 }
 
@@ -846,26 +930,23 @@ a.btn {
 
 .btn-danger {
   background: var(--u-red);
-  box-shadow: 0 2px 8px rgb(220 38 38 / 0.3);
+  color: var(--on-color);
 }
 
 @media (hover: hover) {
   .btn-danger:hover {
-    background: #B91C1C;
-    box-shadow: 0 6px 20px rgb(220 38 38 / 0.4);
+    background: var(--danger-strong);
   }
 }
 
 .btn-secondary {
   background: var(--surface-2);
   color: var(--text);
-  box-shadow: none;
 }
 
 @media (hover: hover) {
   .btn-secondary:hover {
-    background: rgb(15 23 42 / 0.09);
-    box-shadow: none;
+    background: var(--ink-a09);
   }
 }
 
@@ -884,22 +965,13 @@ a.btn {
   margin-top: 0;
 }
 
-/* ===== Grupo de vidrio (anidado: 20 → filas 12) ===== */
+/* ===== Grupo (card plana: 20, filas a sangre) ===== */
 .group {
-  border-radius: var(--r);
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow);
+  border-radius: var(--r-lg);
+  background: var(--card);
   overflow: hidden;
   margin-bottom: var(--space-3);
   animation: rise 0.3s var(--ease) backwards;
-  transition: box-shadow var(--t) var(--ease), border-color var(--t) var(--ease);
-}
-
-@media (hover: hover) {
-  .group:hover {
-    box-shadow: var(--shadow-hover);
-  }
 }
 
 /* ya asentado (post-skeleton o repintado quiet): no repetir la entrada */
@@ -935,7 +1007,7 @@ a.btn {
 @media (hover: hover) {
   .card:hover {
     background:
-      linear-gradient(rgb(79 70 229 / 0.05), rgb(79 70 229 / 0.05)),
+      linear-gradient(var(--accent-a05), var(--accent-a05)),
       linear-gradient(color-mix(in srgb, var(--u) var(--tint-alpha), transparent),
         color-mix(in srgb, var(--u) var(--tint-alpha), transparent));
   }
@@ -983,7 +1055,7 @@ a.btn {
 /* ===== Skeleton (carga) ===== */
 .skel {
   border-radius: var(--r-sm);
-  background: linear-gradient(90deg, var(--surface-2) 25%, rgb(15 23 42 / 0.1) 37%, var(--surface-2) 63%);
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--ink-a10) 37%, var(--surface-2) 63%);
   background-size: 200% 100%;
   animation: skel 1.4s ease-in-out infinite;
 }
@@ -1028,12 +1100,20 @@ a.btn {
   font-weight: 500;
 }
 
+/* con un sheet abierto la página de atrás no se mueve (ni header sticky, ni barra del navegador, ni rebote) */
+html.sheet-open,
+html.sheet-open body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* ===== Sheet (anidado: 24 → campos 12) ===== */
 .sheet-backdrop {
   position: fixed;
   inset: 0;
   z-index: 20;
-  background: rgb(15 23 42 / 0.35);
+  background: var(--scrim);
+  touch-action: none;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1041,14 +1121,21 @@ a.btn {
 
 .sheet {
   width: 100%;
-  max-height: 85dvh;
-  overflow-y: auto;
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  /* --kb: lo que tapa el teclado (iOS no encoge el layout); el sheet llega hasta el fondo para no dejar hueco */
+  max-height: calc(var(--vvh, 100dvh) - var(--space-4) + var(--kb, 0px));
+  overflow: hidden; /* sin teclado no hay scroll; con campo enfocado (.kb) solo vertical */
+  overscroll-behavior: contain;
+  touch-action: none;
+  background: var(--sheet);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
   padding: var(--space-2) var(--space-4);
-  padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom) + var(--kb, 0px));
   animation: sheet-up 0.25s var(--ease);
+}
+
+.sheet.kb {
+  overflow-y: auto;
+  touch-action: pan-y;
 }
 
 @keyframes sheet-up {
@@ -1058,14 +1145,28 @@ a.btn {
   }
 }
 
-.sheet::before {
+/* barrita de arriba: botón real (cierra el sheet); alto 44 con margen negativo para no mover el contenido */
+.sheet-grab {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: var(--tap);
+  margin: calc(var(--space-2) * -1) 0 calc(var(--space-4) - var(--tap) + var(--space-2) + 5px);
+  padding: 0;
+  border: none;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sheet-grab::before {
   content: "";
   display: block;
   width: 36px;
   height: 5px;
   border-radius: 3px;
   background: var(--border);
-  margin: 0 auto var(--space-4);
+  margin: var(--space-2) auto 0;
 }
 
 /* ===== Toast ===== */
@@ -1079,10 +1180,8 @@ a.btn {
   max-width: calc(100% - var(--space-5) * 2);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--r-md);
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow);
-  color: var(--text);
+  background: var(--text); /* invertido: oscuro sobre claro y al revés */
+  color: var(--bg);
   font-size: 14px;
   text-align: center;
   animation: rise 0.18s var(--ease);
@@ -1132,9 +1231,9 @@ a.btn {
   width: 100%;
   min-height: var(--tap);
   padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--r-md);
-  background: #fff;
+  background: var(--field);
   color: var(--text);
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
@@ -1159,6 +1258,8 @@ a.btn {
 
 .sheet-actions .btn {
   flex: 1;
+  min-width: 0;
+  padding-inline: var(--space-3); /* con Eliminar son 3 botones: con 24px no caben en 358px */
 }
 
 /* selector de miembro */
@@ -1193,7 +1294,7 @@ a.btn {
 
 .member-row button.selected {
   border-color: var(--accent);
-  background: rgb(79 70 229 / 0.08);
+  background: var(--accent-a08);
   color: var(--text);
 }
 
@@ -1204,7 +1305,7 @@ a.btn {
   gap: 2px;
   padding: 3px;
   border-radius: var(--r-md);
-  background: var(--surface-2);
+  background: var(--seg-track);
 }
 
 .seg button {
@@ -1228,10 +1329,9 @@ a.btn {
 }
 
 .seg button.selected {
-  background: #fff;
+  background: var(--seg-on);
   color: var(--text);
   font-weight: 600;
-  box-shadow: 0 1px 4px rgb(15 23 42 / 0.12);
 }
 
 /* ===== Calendario ===== */
@@ -1304,7 +1404,7 @@ a.btn {
 }
 
 .week-strip .day.selected {
-  background: rgb(79 70 229 / 0.1);
+  background: var(--accent-a10);
 }
 
 .day-dots {
@@ -1373,7 +1473,7 @@ a.btn {
 }
 
 .month-grid .cell.selected {
-  background: rgb(79 70 229 / 0.1);
+  background: var(--accent-a10);
 }
 
 /* ===== Listas ===== */
@@ -1388,8 +1488,29 @@ a.btn {
 
 @media (hover: hover) {
   .list-card:hover {
-    background: rgb(79 70 229 / 0.05);
+    background: var(--accent-a05);
   }
+}
+
+.list-card .end {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.list-card .end .icon-btn {
+  width: 32px;
+  height: 32px;
+  margin: -8px -4px -8px 0; /* no agranda la fila */
+}
+
+.list-card .end .icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.list-card.done > span:first-child {
+  color: var(--text-dim);
 }
 
 .list-card .count {
@@ -1465,7 +1586,7 @@ a.btn {
 @media (hover: hover) {
   .item-row .del:hover {
     color: var(--u-red);
-    background: rgb(220 38 38 / 0.08);
+    background: var(--danger-a08);
   }
 }
 
@@ -1479,11 +1600,16 @@ a.btn {
   flex: 1;
   min-height: var(--tap);
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--glass-border);
+  border: 1px solid transparent;
   border-radius: var(--r-md);
-  background: var(--glass);
+  background: var(--card);
   color: var(--text);
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
+}
+
+.del-list {
+  width: 100%;
+  margin-top: var(--space-5);
 }
 
 .quickadd input:focus {
@@ -1568,7 +1694,7 @@ details.hechas summary {
 
   .sheet {
     max-width: 480px;
-    border-radius: var(--r-lg);
+    border-radius: var(--r-xl);
   }
 }
 
@@ -1584,7 +1710,7 @@ details.hechas summary {
     width: 88px;
     padding-top: 72px;
     border-top: none;
-    border-right: 1px solid var(--glass-border);
+    border-right: 1px solid var(--border);
   }
 
   .tabbar a {
