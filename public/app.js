@@ -144,7 +144,8 @@ const tools = ["me-slot", "add-btn", "push-toggle", "theme-btn", "logout"].map((
 function placeChrome() {
     if (desk.matches) {
         document.querySelector(".side-top").append(brand, tools[0]);
-        document.querySelector(".side-opts").append(...tools.slice(1));
+        document.querySelector(".side-ctx").append(tools[1]); // acción de la pestaña actual
+        document.querySelector(".side-opts").append(...tools.slice(2));
     } else {
         hdr.prepend(brand);
         hdr.querySelector(".header-actions").append(...tools);
