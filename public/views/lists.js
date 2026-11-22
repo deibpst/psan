@@ -4,6 +4,13 @@ import { esc } from "/views/tasks.js";
 
 let openListId = null; // lista abierta; null = índice de listas
 
+// tocar "Listas" estando dentro de una lista: no hay hashchange, así que vuelve al índice
+export function closeList(section) {
+    if (openListId === null) return;
+    openListId = null;
+    renderLists(section);
+}
+
 export async function renderLists(section, quiet = false) {
     setAddAction(openListId !== null
         ? () => section.querySelector("#new-item")?.focus()

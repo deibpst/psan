@@ -2,7 +2,7 @@ import { api } from "/api.js";
 import { renderLogin } from "/views/login.js";
 import { renderTasks } from "/views/tasks.js";
 import { renderCalendar } from "/views/calendar.js";
-import { renderLists } from "/views/lists.js";
+import { renderLists, closeList } from "/views/lists.js";
 
 // ponytail: familia fija de 3, hardcodeada. Si crece → endpoint /api/users.
 export const MEMBERS = [
@@ -149,6 +149,9 @@ function route() {
     views[name](section);
 }
 window.addEventListener("hashchange", route);
+document.querySelector('.tabbar a[data-tab="listas"]').addEventListener("click", () => {
+    if (location.hash === "#listas") closeList(document.getElementById("view-listas"));
+});
 
 // refresco al volver a la pestaña
 document.addEventListener("visibilitychange", () => {
