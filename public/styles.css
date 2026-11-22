@@ -281,20 +281,20 @@ select {
   transform: scale(0.94);
 }
 
-/* pill morado que abarca ícono + texto y barre hacia la pestaña activa (posición y ancho los pone app.js) */
+/* pill morado que abarca ícono + texto y barre hacia la pestaña activa (posición y medidas las pone app.js; sirve en barra inferior y lateral) */
 .tab-pill {
   position: absolute;
-  top: 4px;
-  bottom: calc(4px + env(safe-area-inset-bottom));
+  top: 0;
   left: 0;
   width: 0;
+  height: 0;
   border-radius: 999px;
   background: var(--accent);
   pointer-events: none;
 }
 
 .tab-pill.ready {
-  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
