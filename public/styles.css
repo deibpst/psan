@@ -75,10 +75,15 @@
   --bg-glow-b: rgb(14 165 233 / 0.10);
 
   /* superficies y texto sobre ellas */
-  --surface: #FFFFFF;
+  --surface: #FFFFFF; /* solo landing */
+  --bg: #F4F4F6;
+  --card: #FFFFFF;
+  --sheet: #FFFFFF;
+  --field: #F4F4F6;
+  --seg-track: #E9E9ED;
+  --seg-on: #FFFFFF;
   --on-color: #FFFFFF;
   --on-primary: #FFFFFF;
-  --glass-fallback: rgb(255 255 255 / 0.92);
   --scrim: rgb(15 23 42 / 0.35);
   --ink-a09: rgb(15 23 42 / 0.09);
   --ink-a10: rgb(15 23 42 / 0.1);
@@ -90,15 +95,8 @@
   --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230F172A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 
   /* sombras (se eliminan en la fase de superficies planas) */
-  --shadow-btn: 0 2px 8px rgb(15 23 42 / 0.25);
-  --shadow-btn-hover: 0 6px 20px rgb(15 23 42 / 0.3);
-  --shadow-danger: 0 2px 8px rgb(220 38 38 / 0.3);
-  --shadow-danger-hover: 0 6px 20px rgb(220 38 38 / 0.4);
-  --shadow-login: 0 4px 16px rgb(15 23 42 / 0.25);
-  --shadow-login-hover: 0 8px 24px rgb(15 23 42 / 0.3);
   --shadow-hero: 0 4px 16px rgb(0 0 0 / 0.25);
   --shadow-hero-hover: 0 8px 24px rgb(0 0 0 / 0.3);
-  --shadow-seg: 0 1px 4px rgb(15 23 42 / 0.12);
 
   /* sobre fotos (landing y login): fijos, no cambian con el tema */
   --on-image: #FFFFFF;
@@ -124,14 +122,14 @@
   --on-primary: #0B0B0F;
   --ring: 0 0 0 3px rgb(255 77 166 / 0.4);
 
-  --glass: rgb(16 16 20 / 0.72);
-  --glass-strong: rgb(24 24 29 / 0.94);
-  --glass-border: rgb(255 255 255 / 0.08);
-  --shadow: 0 8px 32px rgb(0 0 0 / 0.5);
-  --shadow-hover: 0 12px 40px rgb(0 0 0 / 0.6);
-  --surface: #2A2A31;
   --surface-2: rgb(255 255 255 / 0.06);
   --border: rgb(255 255 255 / 0.1);
+  --bg: #000000;
+  --card: #101012;
+  --sheet: #1A1A1F;
+  --field: #26262C;
+  --seg-track: #26262C;
+  --seg-on: #3A3A42;
   --tint-alpha: 18%;
 
   --u-red: #F87171;
@@ -152,7 +150,6 @@
   --bg-glow-a: rgb(228 0 124 / 0.14);
   --bg-glow-b: rgb(14 165 233 / 0.08);
 
-  --glass-fallback: rgb(16 16 20 / 0.96);
   --scrim: rgb(0 0 0 / 0.6);
   --ink-a09: rgb(255 255 255 / 0.09);
   --ink-a10: rgb(255 255 255 / 0.1);
@@ -163,13 +160,6 @@
   --danger-a08: rgb(248 113 113 / 0.14);
   --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23F2F2F5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 
-  --shadow-btn: 0 2px 8px rgb(0 0 0 / 0.5);
-  --shadow-btn-hover: 0 6px 20px rgb(0 0 0 / 0.6);
-  --shadow-danger: 0 2px 8px rgb(248 113 113 / 0.3);
-  --shadow-danger-hover: 0 6px 20px rgb(248 113 113 / 0.4);
-  --shadow-login: 0 4px 16px rgb(0 0 0 / 0.5);
-  --shadow-login-hover: 0 8px 24px rgb(0 0 0 / 0.6);
-  --shadow-seg: 0 1px 4px rgb(0 0 0 / 0.4);
 }
 
 /* ===== Base ===== */
@@ -215,30 +205,6 @@ select {
   box-shadow: var(--ring);
 }
 
-/* receta de vidrio */
-.header,
-.tabbar,
-.group,
-.sheet,
-.seg,
-.quickadd input,
-.state .btn,
-.toast {
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-}
-
-@supports not (backdrop-filter: blur(20px)) {
-
-  .header,
-  .tabbar,
-  .group,
-  .sheet,
-  .toast {
-    background: var(--glass-fallback) !important;
-  }
-}
-
 /* ===== Header ===== */
 .header {
   position: sticky;
@@ -250,7 +216,7 @@ select {
   padding: var(--space-2) var(--space-4);
   padding-top: calc(var(--space-2) + env(safe-area-inset-top));
   background: var(--chrome);
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--border);
 }
 
 /* ícono siempre al desnudo: sin margen, fondo, sombra ni radio */
@@ -330,7 +296,7 @@ select {
 }
 
 .avatar-stack .avatar {
-  border: 2px solid var(--surface);
+  border: 2px solid var(--card);
 }
 
 .avatar-stack .avatar+.avatar {
@@ -353,8 +319,8 @@ select {
   right: 0;
   z-index: 10;
   display: flex;
-  background: var(--glass);
-  border-top: 1px solid var(--glass-border);
+  background: var(--chrome);
+  border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -773,7 +739,7 @@ a.btn {
   gap: var(--space-4);
   padding: var(--space-6) var(--space-5);
   padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
-  background: var(--surface);
+  background: var(--card);
   text-align: center;
 }
 
@@ -818,9 +784,9 @@ a.btn {
   padding: var(--space-2) calc(var(--space-3) * 2 + 18px) var(--space-2) var(--space-3);
   appearance: none;
   -webkit-appearance: none;
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--r-md);
-  background: var(--surface) var(--select-arrow) no-repeat right var(--space-3) center;
+  background: var(--field) var(--select-arrow) no-repeat right var(--space-3) center;
   background-size: 18px;
   color: var(--text);
   font-size: 16px;
@@ -846,9 +812,9 @@ a.btn {
   text-align: center;
   font-size: 24px;
   font-weight: 600;
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--r-md);
-  background: var(--surface);
+  background: var(--field);
   color: var(--text);
   caret-color: var(--accent);
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
@@ -870,7 +836,6 @@ a.btn {
   border-radius: var(--r-md);
   background: var(--primary);
   color: var(--on-primary);
-  box-shadow: var(--shadow-login);
   animation: rise 0.18s var(--ease);
   transition: background var(--t) var(--ease), transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
@@ -879,7 +844,6 @@ a.btn {
   .login-go:hover {
     background: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-login-hover);
   }
 }
 
@@ -958,7 +922,6 @@ a.btn {
   color: var(--on-primary);
   font-size: 16px;
   font-weight: 600;
-  box-shadow: var(--shadow-btn);
   transition: background var(--t) var(--ease), transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 
@@ -966,7 +929,6 @@ a.btn {
   .btn:hover {
     background: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-btn-hover);
   }
 }
 
@@ -977,26 +939,22 @@ a.btn {
 .btn-danger {
   background: var(--u-red);
   color: var(--on-color);
-  box-shadow: var(--shadow-danger);
 }
 
 @media (hover: hover) {
   .btn-danger:hover {
     background: var(--danger-strong);
-    box-shadow: var(--shadow-danger-hover);
   }
 }
 
 .btn-secondary {
   background: var(--surface-2);
   color: var(--text);
-  box-shadow: none;
 }
 
 @media (hover: hover) {
   .btn-secondary:hover {
     background: var(--ink-a09);
-    box-shadow: none;
   }
 }
 
@@ -1015,22 +973,13 @@ a.btn {
   margin-top: 0;
 }
 
-/* ===== Grupo de vidrio (anidado: 20 → filas 12) ===== */
+/* ===== Grupo (card plana: 20, filas a sangre) ===== */
 .group {
   border-radius: var(--r-lg);
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow);
+  background: var(--card);
   overflow: hidden;
   margin-bottom: var(--space-3);
   animation: rise 0.3s var(--ease) backwards;
-  transition: box-shadow var(--t) var(--ease), border-color var(--t) var(--ease);
-}
-
-@media (hover: hover) {
-  .group:hover {
-    box-shadow: var(--shadow-hover);
-  }
 }
 
 /* ya asentado (post-skeleton o repintado quiet): no repetir la entrada */
@@ -1185,8 +1134,7 @@ html.sheet-open body {
   overflow: hidden; /* sin teclado no hay scroll; con campo enfocado (.kb) solo vertical */
   overscroll-behavior: contain;
   touch-action: none;
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-border);
+  background: var(--sheet);
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   padding: var(--space-2) var(--space-4);
   padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom) + var(--kb, 0px));
@@ -1240,10 +1188,8 @@ html.sheet-open body {
   max-width: calc(100% - var(--space-5) * 2);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--r-md);
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow);
-  color: var(--text);
+  background: var(--text); /* invertido: oscuro sobre claro y al revés */
+  color: var(--bg);
   font-size: 14px;
   text-align: center;
   animation: rise 0.18s var(--ease);
@@ -1293,9 +1239,9 @@ html.sheet-open body {
   width: 100%;
   min-height: var(--tap);
   padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--r-md);
-  background: var(--surface);
+  background: var(--field);
   color: var(--text);
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
@@ -1365,7 +1311,7 @@ html.sheet-open body {
   gap: 2px;
   padding: 3px;
   border-radius: var(--r-md);
-  background: var(--surface-2);
+  background: var(--seg-track);
 }
 
 .seg button {
@@ -1389,10 +1335,9 @@ html.sheet-open body {
 }
 
 .seg button.selected {
-  background: var(--surface);
+  background: var(--seg-on);
   color: var(--text);
   font-weight: 600;
-  box-shadow: var(--shadow-seg);
 }
 
 /* ===== Calendario ===== */
@@ -1640,9 +1585,9 @@ html.sheet-open body {
   flex: 1;
   min-height: var(--tap);
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--glass-border);
+  border: 1px solid transparent;
   border-radius: var(--r-md);
-  background: var(--glass);
+  background: var(--card);
   color: var(--text);
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
@@ -1745,7 +1690,7 @@ details.hechas summary {
     width: 88px;
     padding-top: 72px;
     border-top: none;
-    border-right: 1px solid var(--glass-border);
+    border-right: 1px solid var(--border);
   }
 
   .tabbar a {
