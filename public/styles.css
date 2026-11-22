@@ -52,6 +52,7 @@
   --surface-2: rgb(15 23 42 / 0.05);
   --border: rgb(15 23 42 / 0.08);
   --tint-alpha: 12%;
+  --glow-alpha: 24%; /* halo de los rellenos de color: sutil en claro, más fuerte en oscuro */
 
   /* urgencia */
   --u-red: #E5002B;
@@ -125,6 +126,7 @@
   --seg-track: #26262C;
   --seg-on: #3A3A42;
   --tint-alpha: 16%;
+  --glow-alpha: 46%;
 
   --u-red: #FF4D5E;
   --u-yellow: #FFC400;
@@ -360,6 +362,7 @@ select {
   border-radius: var(--r-nav);
   background: var(--accent);
   pointer-events: none;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) var(--glow-alpha), transparent);
 }
 
 .tab-pill.ready {
@@ -828,6 +831,7 @@ a.btn {
   border-radius: var(--r-md);
   background: var(--primary);
   color: var(--on-primary);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--primary) var(--glow-alpha), transparent);
   animation: rise 0.18s var(--ease);
   transition: background var(--t) var(--ease), transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
@@ -914,6 +918,7 @@ a.btn {
   color: var(--on-primary);
   font-size: 16px;
   font-weight: 600;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--primary) var(--glow-alpha), transparent);
   transition: background var(--t) var(--ease), transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 
@@ -931,6 +936,7 @@ a.btn {
 .btn-danger {
   background: var(--u-red);
   color: var(--on-color);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--u-red) var(--glow-alpha), transparent);
 }
 
 @media (hover: hover) {
@@ -942,6 +948,7 @@ a.btn {
 .btn-secondary {
   background: var(--surface-2);
   color: var(--text);
+  box-shadow: none;
 }
 
 @media (hover: hover) {
@@ -1050,6 +1057,7 @@ a.btn {
   border-radius: 50%;
   background: var(--u);
   flex-shrink: 0;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--u) var(--glow-alpha), transparent);
 }
 
 /* ===== Skeleton (carga) ===== */
@@ -1551,6 +1559,7 @@ html.sheet-open body {
   background: var(--accent);
   border-color: var(--accent);
   transform: scale(1.08);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) var(--glow-alpha), transparent);
 }
 
 .item-row input[type="checkbox"]:checked::after {
