@@ -1641,6 +1641,10 @@ details.hechas summary {
     padding: var(--space-3) 0;
   }
 
+  .tab-pill {
+    border-radius: var(--r);
+  }
+
   #main {
     margin-left: 88px;
     max-width: 860px;

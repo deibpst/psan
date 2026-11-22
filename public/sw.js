@@ -1,5 +1,5 @@
 // Cache del app shell: estáticos cache-first, /api siempre red
-const VERSION = "psan-v37";
+const VERSION = "psan-v38";
 const SHELL = [
     "/", "/app", "/styles.css", "/app.js", "/api.js",
     "/views/login.js", "/views/tasks.js", "/views/calendar.js", "/views/lists.js",
