@@ -449,8 +449,8 @@ test("avisos de listas: crear lista avisa a los demás, no a quien la crea", asy
     const list = await json(await listsIndex.POST(req("/api/lists", { method: "POST", body: JSON.stringify({ name }) })));
     const rows = (await pending(notifyEp.u2)).filter((n) => n.body.endsWith(name));
     expect(rows.length).toBe(1);
-    expect(rows[0].title).toBe("Nueva lista");
-    expect(rows[0].body).toMatch(/^test-.* creó la lista: /);
+    expect(rows[0]!.title).toBe("Nueva lista");
+    expect(rows[0]!.body).toMatch(/^test-.* creó la lista: /);
     expect((await pending(notifyEp.u1)).length).toBe(0);
     await sql`DELETE FROM lists WHERE id = ${list.id}`;
 });
@@ -469,15 +469,15 @@ test("avisos de listas: agregar item avisa y agrupa ráfagas", async () => {
     // 3 items seguidos = 1 solo aviso, con el primer item
     const rows = await pending(notifyEp.u2);
     expect(rows.length).toBe(1);
-    expect(rows[0].title).toBe("Lista actualizada");
-    expect(rows[0].body).toMatch(new RegExp(`^test-.* agregó Leche a: ${name}$`));
+    expect(rows[0]!.title).toBe("Lista actualizada");
+    expect(rows[0]!.body).toMatch(new RegExp(`^test-.* agregó Leche a: ${name}$`));
     expect((await pending(notifyEp.u1)).length).toBe(0);
 
     // otra persona agregando a la misma lista sí avisa (a user1)
     await add("Sal", cookie2);
     const u1rows = await pending(notifyEp.u1);
     expect(u1rows.length).toBe(1);
-    expect(u1rows[0].body).toMatch(new RegExp(`^test-.*-b agregó Sal a: ${name}$`));
+    expect(u1rows[0]!.body).toMatch(new RegExp(`^test-.*-b agregó Sal a: ${name}$`));
     await sql`DELETE FROM list_items WHERE list_id = ${list.id}`;
     await sql`DELETE FROM lists WHERE id = ${list.id}`;
 });
@@ -492,8 +492,8 @@ test("avisos de listas: marcar terminada avisa; reabrir no", async () => {
     await patch(true);
     const rows = await pending(notifyEp.u2);
     expect(rows.length).toBe(1);
-    expect(rows[0].title).toBe("Lista terminada");
-    expect(rows[0].body).toMatch(new RegExp(`^test-.* marcó como terminada la lista: ${name}$`));
+    expect(rows[0]!.title).toBe("Lista terminada");
+    expect(rows[0]!.body).toMatch(new RegExp(`^test-.* marcó como terminada la lista: ${name}$`));
     expect((await pending(notifyEp.u1)).length).toBe(0);
 
     await patch(false); // reabrir: en silencio
@@ -510,8 +510,8 @@ test("avisos de listas: eliminar avisa a los demás con el nombre", async () => 
     expect((await listById.DELETE(req(`/api/lists/${list.id}`, { method: "DELETE" }))).status).toBe(200);
     const rows = await pending(notifyEp.u2);
     expect(rows.length).toBe(1);
-    expect(rows[0].title).toBe("Lista eliminada");
-    expect(rows[0].body).toMatch(new RegExp(`^test-.* eliminó la lista: ${name}$`));
+    expect(rows[0]!.title).toBe("Lista eliminada");
+    expect(rows[0]!.body).toMatch(new RegExp(`^test-.* eliminó la lista: ${name}$`));
     expect((await pending(notifyEp.u1)).length).toBe(0);
 
     // lista inexistente: sin aviso

@@ -14,7 +14,7 @@ test("styles.css: sin colores crudos fuera de los bloques de tokens", async () =
 test("index.html: theme-color coincide con --chrome en claro y oscuro", async () => {
     const css = await Bun.file(import.meta.dir + "/../public/styles.css").text();
     const html = await Bun.file(import.meta.dir + "/../public/index.html").text();
-    const chrome = [...css.matchAll(/--chrome:\s*(#[0-9A-Fa-f]{6})/g)].map((m) => m[1].toUpperCase());
+    const chrome = [...css.matchAll(/--chrome:\s*(#[0-9A-Fa-f]{6})/g)].map((m) => m[1]!.toUpperCase());
     expect(chrome.length).toBe(2); // claro, oscuro
     for (const c of chrome) expect(html.toUpperCase()).toContain(`"${c}"`);
     expect(html.toUpperCase()).toContain(`CONTENT="${chrome[0]}"`);
