@@ -82,9 +82,14 @@ if (vv) {
     vv.addEventListener("scroll", syncViewport);
 }
 export function closeSheet() {
+    sheetEl.classList.remove("kb");
     backdrop.hidden = true;
     sheetEl.innerHTML = "";
 }
+// "Teclado visible" = hay un campo enfocado; solo entonces el sheet puede hacer scroll (.kb)
+const isField = (el) => !!el?.matches?.("input, textarea, select");
+sheetEl.addEventListener("focusin", (e) => sheetEl.classList.toggle("kb", isField(e.target)));
+sheetEl.addEventListener("focusout", (e) => { if (!isField(e.relatedTarget)) sheetEl.classList.remove("kb"); });
 backdrop.addEventListener("click", (e) => { if (e.target === backdrop || e.target.closest(".sheet-grab")) closeSheet(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet(); });
 

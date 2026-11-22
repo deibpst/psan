@@ -1037,7 +1037,7 @@ a.btn {
   height: var(--vvh, 100dvh);
   z-index: 20;
   background: rgb(15 23 42 / 0.35);
-  touch-action: pan-y;
+  touch-action: none;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1046,16 +1046,20 @@ a.btn {
 .sheet {
   width: 100%;
   max-height: calc(var(--vvh, 100dvh) - var(--space-4));
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden; /* sin teclado no hay scroll; con campo enfocado (.kb) solo vertical */
   overscroll-behavior: contain;
-  touch-action: pan-y; /* solo scroll vertical, sin arrastre lateral */
+  touch-action: none;
   background: var(--glass-strong);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-lg) var(--r-lg) 0 0;
   padding: var(--space-2) var(--space-4);
   padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
   animation: sheet-up 0.25s var(--ease);
+}
+
+.sheet.kb {
+  overflow-y: auto;
+  touch-action: pan-y;
 }
 
 @keyframes sheet-up {
