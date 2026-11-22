@@ -184,6 +184,7 @@ document.getElementById("theme-btn").addEventListener("click", () => {
 });
 
 document.getElementById("logout").addEventListener("click", async (e) => {
+    if (!confirmar("¿Cerrar sesión?")) return;
     const btn = e.currentTarget;
     btn.disabled = true;
     try {
