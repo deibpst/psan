@@ -3,6 +3,10 @@
 // así un import roto en uno no tira a los demás.
 const ops: Record<string, () => Promise<Record<string, (req: Request) => Response | Promise<Response>>>> = {
     health: () => import("../lib/handlers/health"),
+    login: () => import("../lib/handlers/login"),
+    logout: () => import("../lib/handlers/logout"),
+    me: () => import("../lib/handlers/me"),
+    notifications: () => import("../lib/handlers/notifications"),
 };
 
 async function hub(req: Request): Promise<Response> {

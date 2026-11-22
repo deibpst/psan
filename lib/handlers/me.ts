@@ -1,4 +1,4 @@
-import { getUser, touchSession, readSessionToken, TIMEOUT_MINUTES } from "../lib/auth";
+import { getUser, touchSession, readSessionToken, TIMEOUT_MINUTES } from "../auth";
 
 export async function GET(req: Request) {
     const user = await getUser(req);

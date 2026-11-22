@@ -1,4 +1,4 @@
-import { destroySession, readSessionToken } from "../lib/auth";
+import { destroySession, readSessionToken } from "../auth";
 
 export async function POST(req: Request) {
     const token = readSessionToken(req);

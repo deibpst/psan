@@ -1,5 +1,5 @@
-import { sql } from "../lib/db";
-import { createSession, TIMEOUT_MINUTES } from "../lib/auth";
+import { sql } from "../db";
+import { createSession, TIMEOUT_MINUTES } from "../auth";
 
 const MAX_FAILURES = 5;
 const WINDOW_MINUTES = 15;

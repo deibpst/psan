@@ -9,8 +9,8 @@ import * as listItems from "../api/lists/[id]/items";
 import * as listById from "../api/lists/[id]";
 import * as push from "../api/push";
 import * as cronNotify from "../api/cron/notify";
-import * as notifications from "../api/notifications";
-import * as me from "../api/me";
+import * as notifications from "./handlers/notifications";
+import * as me from "./handlers/me";
 
 let userId: number;
 let cookie: string;
