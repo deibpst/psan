@@ -259,6 +259,9 @@ select {
   color: var(--text-dim);
   font-size: 10.5px;
   font-weight: 600;
+  -webkit-tap-highlight-color: transparent; /* sin destello gris del navegador al tocar */
+  -webkit-touch-callout: none; /* sin menú de enlace al mantener presionado en iOS */
+  user-select: none;
   transition: color var(--t) var(--ease);
 }
 
@@ -282,6 +285,15 @@ select {
 .tabbar a.active svg {
   background: var(--accent);
   color: var(--on-accent);
+}
+
+/* feedback al mantener presionado: solo el pill del ícono, con la misma transición que al activarse */
+.tabbar a:active svg {
+  transform: scale(0.92);
+}
+
+.tabbar a:not(.active):active svg {
+  background: var(--surface-2);
 }
 
 /* ===== Landing ===== */
