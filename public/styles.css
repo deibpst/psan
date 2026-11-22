@@ -34,15 +34,14 @@
 
   --text: #0F172A;
   /* slate 900 */
-  --text-dim: #64748B;
-  /* slate 500, 4.7:1 sobre blanco */
-  --accent: #E4007C; /* rosa mexicano */
-  --accent-strong: #B8006A;
+  --text-dim: #5A6A80; /* 5.0:1 sobre la página gris, 5.5:1 sobre blanco */
+  --accent: #D80073; /* rosa mexicano, 4.6:1 sobre la página gris y sobre blanco */
+  --accent-strong: #AD005C;
   --on-accent: #FFFFFF;
   --primary: #0F172A;
   /* botones principales: negro, como el landing */
   --primary-hover: #1E293B;
-  --ring: 0 0 0 3px rgb(228 0 124 / 0.25);
+  --ring: 0 0 0 3px rgb(216 0 115 / 0.25);
 
   /* vidrio */
   --glass: rgb(255 255 255 / 0.62);
@@ -52,19 +51,19 @@
   --shadow-hover: 0 12px 40px rgb(15 23 42 / 0.12);
   --surface-2: rgb(15 23 42 / 0.05);
   --border: rgb(15 23 42 / 0.08);
-  --tint-alpha: 8%;
+  --tint-alpha: 12%;
 
   /* urgencia */
-  --u-red: #DC2626;
-  --u-yellow: #D97706;
-  --u-green: #16A34A;
-  --u-blue: #64809E;
+  --u-red: #E5002B;
+  --u-yellow: #DE7800; /* 3 días: naranja vivo (un amarillo puro no llega a 3:1 sobre blanco) */
+  --u-green: #009F3B;
+  --u-blue: #4F7DB0;
   --u-blue-faint: #94A9BE;
 
   /* miembros */
   --m-deib: #7C3AED;
-  --m-papa: #EA580C;
-  --m-mama: #B87A6B; /* rose gold */
+  --m-papa: #CF4700;
+  --m-mama: #A65E50; /* rose gold, el más claro que da 4.5:1 con texto blanco */
 
   /* barra superior */
   --chrome: #FFFFFF; /* header sólido; igual al theme-color de index.html. iOS pinta su barra de estado blanca (claro) o negra (oscuro) */
@@ -82,11 +81,11 @@
   --scrim: rgb(15 23 42 / 0.35);
   --ink-a09: rgb(15 23 42 / 0.09);
   --ink-a10: rgb(15 23 42 / 0.1);
-  --accent-a05: rgb(228 0 124 / 0.05);
-  --accent-a08: rgb(228 0 124 / 0.08);
-  --accent-a10: rgb(228 0 124 / 0.1);
-  --danger-strong: #B91C1C;
-  --danger-a08: rgb(220 38 38 / 0.08);
+  --accent-a05: rgb(216 0 115 / 0.05);
+  --accent-a08: rgb(216 0 115 / 0.08);
+  --accent-a10: rgb(216 0 115 / 0.1);
+  --danger-strong: #BF0022;
+  --danger-a08: rgb(229 0 43 / 0.08);
   --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230F172A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 
   /* sombras (se eliminan en la fase de superficies planas) */
@@ -103,7 +102,7 @@
   --product-scrim: linear-gradient(180deg, rgb(15 23 42 / 0.35), rgb(15 23 42 / 0.5));
 }
 
-/* Oscuro: paleta inicial, se afina en la fase de paleta */
+/* Oscuro: estado y miembros muy vivos; contraste verificado con script (WCAG AA) */
 [data-theme="dark"] {
   color-scheme: dark;
 
@@ -125,17 +124,17 @@
   --field: #26262C;
   --seg-track: #26262C;
   --seg-on: #3A3A42;
-  --tint-alpha: 18%;
+  --tint-alpha: 16%;
 
-  --u-red: #F87171;
-  --u-yellow: #FBBF24;
-  --u-green: #4ADE80;
-  --u-blue: #8FB0D0;
+  --u-red: #FF4D5E;
+  --u-yellow: #FFC400;
+  --u-green: #2EE672;
+  --u-blue: #7AA7DB;
   --u-blue-faint: #6B7C8F;
 
   --on-color: #14141C;
   --m-deib: #A78BFA;
-  --m-papa: #FB923C;
+  --m-papa: #FF8A3D;
   --m-mama: #E0A896;
 
   --chrome: #000000;
@@ -146,8 +145,8 @@
   --accent-a05: rgb(255 77 166 / 0.08);
   --accent-a08: rgb(255 77 166 / 0.12);
   --accent-a10: rgb(255 77 166 / 0.16);
-  --danger-strong: #EF4444;
-  --danger-a08: rgb(248 113 113 / 0.14);
+  --danger-strong: #FF6B78;
+  --danger-a08: rgb(255 77 94 / 0.14);
   --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23F2F2F5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 
 }
