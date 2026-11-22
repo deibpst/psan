@@ -1,4 +1,4 @@
-import { api, swr } from "/api.js";
+import { api, swr, repaint } from "/api.js";
 import {
     MEMBERS, memberById, avatarHtml, avatarsHtml, urgency, duePart, todayStr,
     fmtTime, STATUS_LABEL, openSheet, closeSheet, confirmar, me, setAddAction,
@@ -45,7 +45,7 @@ export async function renderTasks(section, quiet = false) {
         if (hechas.length) {
             html += `<details class="hechas"><summary>Hechas (${hechas.length})</summary><div class="group">${hechas.map(cardHtml).join("")}</div></details>`;
         }
-        section.innerHTML = `<h1 class="large-title">Tareas</h1>` + html;
+        repaint(section, () => { section.innerHTML = `<h1 class="large-title">Tareas</h1>` + html; });
 
         section.onclick = (e) => {
             const doneBtn = e.target.closest("[data-done]");

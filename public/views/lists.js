@@ -1,4 +1,4 @@
-import { api, swr } from "/api.js";
+import { api, swr, repaint } from "/api.js";
 import { openSheet, closeSheet, confirmar, setAddAction, setLeaveGuard, toast } from "/app.js";
 import { esc } from "/views/tasks.js";
 
@@ -87,7 +87,7 @@ function paintLists(section, lists) {
     if (hechas.length) {
         html += `<details class="hechas"><summary>Hechas (${hechas.length})</summary><div class="group">${hechas.map(row).join("")}</div></details>`;
     }
-    section.innerHTML = `<h1 class="large-title">Listas</h1>` + html;
+    repaint(section, () => { section.innerHTML = `<h1 class="large-title">Listas</h1>` + html; });
 
     section.onclick = async (e) => {
         const re = e.target.closest("[data-reopen]");
