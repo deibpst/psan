@@ -121,6 +121,18 @@ export function setAddAction(fn) {
     addBtn.onclick = fn ?? null;
 }
 
+// ===== Pill de la barra: se coloca bajo la pestaña activa (inset 8px por lado) =====
+const pill = document.querySelector(".tab-pill");
+function movePill() {
+    const a = document.querySelector(".tabbar a.active");
+    if (!a || !a.offsetWidth) return; // barra oculta: no hay medidas
+    pill.style.width = `${a.offsetWidth - 16}px`;
+    pill.style.transform = `translateX(${a.offsetLeft + 8}px)`;
+    // la primera posición va sin animación; desde el siguiente frame ya anima
+    requestAnimationFrame(() => pill.classList.add("ready"));
+}
+window.addEventListener("resize", movePill);
+
 // ===== Router =====
 const views = { tareas: renderTasks, calendario: renderCalendar, listas: renderLists };
 
@@ -130,6 +142,7 @@ function route() {
     if (!views[name]) { location.hash = "tareas"; return; }
     for (const el of document.querySelectorAll("#main > section")) el.hidden = true;
     for (const a of document.querySelectorAll(".tabbar a")) a.classList.toggle("active", a.dataset.tab === name);
+    movePill();
     const section = document.getElementById(`view-${name}`);
     section.hidden = false;
     views[name](section);

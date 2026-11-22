@@ -248,6 +248,8 @@ select {
 }
 
 .tabbar a {
+  position: relative; /* sobre el pill */
+  z-index: 1;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -262,40 +264,43 @@ select {
   -webkit-tap-highlight-color: transparent; /* sin destello gris del navegador al tocar */
   -webkit-touch-callout: none; /* sin menú de enlace al mantener presionado en iOS */
   user-select: none;
-  transition: color var(--t) var(--ease);
+  transition: color var(--t) var(--ease), transform var(--t) var(--ease);
 }
 
 .tabbar a svg {
   box-sizing: content-box;
   padding: 3px 14px;
-  border-radius: 999px;
-  /* color propio: si heredara el de <a> (que también anima) el ícono parpadea al cambiar de pestaña */
-  color: var(--text-dim);
-  transition: background var(--t) var(--ease), color var(--t) var(--ease), transform var(--t) var(--ease);
-}
-
-@media (hover: hover) {
-  .tabbar a:hover svg {
-    transform: translateY(-1px);
-  }
 }
 
 .tabbar a.active {
-  color: var(--accent);
-}
-
-.tabbar a.active svg {
-  background: var(--accent);
   color: var(--on-accent);
 }
 
-/* feedback al mantener presionado: solo el pill del ícono, con la misma transición que al activarse */
-.tabbar a:active svg {
-  transform: scale(0.92);
+/* mantener presionado: el contenido se encoge un poco, el pill no se mueve */
+.tabbar a:active {
+  transform: scale(0.94);
 }
 
-.tabbar a:not(.active):active svg {
-  background: var(--surface-2);
+/* pill morado que abarca ícono + texto y barre hacia la pestaña activa (posición y ancho los pone app.js) */
+.tab-pill {
+  position: absolute;
+  top: 4px;
+  bottom: calc(4px + env(safe-area-inset-bottom));
+  left: 0;
+  width: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.tab-pill.ready {
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-pill.ready {
+    transition: none;
+  }
 }
 
 /* ===== Landing ===== */
