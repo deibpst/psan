@@ -7,7 +7,7 @@
   font-display: swap;
 }
 
-/* ===== Tokens (solo claro) ===== */
+/* ===== Tokens (claro; los de modo oscuro llegan en la fase 2) ===== */
 :root {
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -59,6 +59,48 @@
   --m-deib: #7C3AED;
   --m-papa: #EA580C;
   --m-mama: #DB2777;
+
+  /* fondo de página */
+  --bg-from: #EEF2FF;
+  --bg-mid: #FFFFFF;
+  --bg-to: #E0F2FE;
+  --bg-glow-a: rgb(79 70 229 / 0.10);
+  --bg-glow-b: rgb(14 165 233 / 0.10);
+
+  /* superficies y texto sobre ellas */
+  --surface: #FFFFFF;
+  --on-color: #FFFFFF;
+  --on-primary: #FFFFFF;
+  --glass-fallback: rgb(255 255 255 / 0.92);
+  --scrim: rgb(15 23 42 / 0.35);
+  --ink-a09: rgb(15 23 42 / 0.09);
+  --ink-a10: rgb(15 23 42 / 0.1);
+  --accent-a05: rgb(79 70 229 / 0.05);
+  --accent-a08: rgb(79 70 229 / 0.08);
+  --accent-a10: rgb(79 70 229 / 0.1);
+  --danger-strong: #B91C1C;
+  --danger-a08: rgb(220 38 38 / 0.08);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230F172A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
+  /* sombras (se eliminan en la fase de superficies planas) */
+  --shadow-btn: 0 2px 8px rgb(15 23 42 / 0.25);
+  --shadow-btn-hover: 0 6px 20px rgb(15 23 42 / 0.3);
+  --shadow-danger: 0 2px 8px rgb(220 38 38 / 0.3);
+  --shadow-danger-hover: 0 6px 20px rgb(220 38 38 / 0.4);
+  --shadow-login: 0 4px 16px rgb(15 23 42 / 0.25);
+  --shadow-login-hover: 0 8px 24px rgb(15 23 42 / 0.3);
+  --shadow-hero: 0 4px 16px rgb(0 0 0 / 0.25);
+  --shadow-hero-hover: 0 8px 24px rgb(0 0 0 / 0.3);
+  --shadow-seg: 0 1px 4px rgb(15 23 42 / 0.12);
+
+  /* sobre fotos (landing y login): fijos, no cambian con el tema */
+  --on-image: #FFFFFF;
+  --on-image-88: rgb(255 255 255 / 0.88);
+  --on-image-85: rgb(255 255 255 / 0.85);
+  --on-image-75: rgb(255 255 255 / 0.75);
+  --on-image-70: rgb(255 255 255 / 0.7);
+  --hero-scrim: linear-gradient(180deg, rgb(15 23 42 / 0.30), rgb(15 23 42 / 0.45));
+  --product-scrim: linear-gradient(180deg, rgb(15 23 42 / 0.35), rgb(15 23 42 / 0.5));
 }
 
 /* ===== Base ===== */
@@ -77,9 +119,9 @@ body {
   color: var(--text);
   min-height: 100dvh;
   background:
-    radial-gradient(600px 400px at 85% -5%, rgb(79 70 229 / 0.10), transparent 70%),
-    radial-gradient(700px 500px at -10% 100%, rgb(14 165 233 / 0.10), transparent 70%),
-    linear-gradient(160deg, #EEF2FF, #FFFFFF 45%, #E0F2FE);
+    radial-gradient(600px 400px at 85% -5%, var(--bg-glow-a), transparent 70%),
+    radial-gradient(700px 500px at -10% 100%, var(--bg-glow-b), transparent 70%),
+    linear-gradient(160deg, var(--bg-from), var(--bg-mid) 45%, var(--bg-to));
   background-attachment: fixed;
 }
 
@@ -124,7 +166,7 @@ select {
   .group,
   .sheet,
   .toast {
-    background: rgb(255 255 255 / 0.92) !important;
+    background: var(--glass-fallback) !important;
   }
 }
 
@@ -200,7 +242,7 @@ select {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  color: #fff;
+  color: var(--on-color);
   font-weight: 600;
   font-size: 0.8rem;
   background: var(--m-deib);
@@ -219,7 +261,7 @@ select {
 }
 
 .avatar-stack .avatar {
-  border: 2px solid #fff;
+  border: 2px solid var(--surface);
 }
 
 .avatar-stack .avatar+.avatar {
@@ -340,7 +382,7 @@ a.btn {
   gap: var(--space-2);
   padding: var(--space-4) var(--space-5);
   padding-top: calc(var(--space-4) + env(safe-area-inset-top));
-  color: #fff;
+  color: var(--on-image);
 }
 
 
@@ -353,7 +395,7 @@ a.btn {
   min-height: 100dvh;
   padding: var(--space-6) var(--space-5);
   text-align: center;
-  color: #fff;
+  color: var(--on-image);
 }
 
 .hero::before {
@@ -370,7 +412,7 @@ a.btn {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.30), rgb(15 23 42 / 0.45));
+  background: var(--hero-scrim);
 }
 
 .hero-content {
@@ -395,7 +437,7 @@ a.btn {
   font-size: 17px;
   font-weight: 500;
   line-height: 1.5;
-  color: rgb(255 255 255 / 0.88);
+  color: var(--on-image-88);
   margin: 0;
   max-width: 420px;
   text-wrap: balance;
@@ -404,7 +446,7 @@ a.btn {
 .hero-more {
   font-size: 15px;
   font-weight: 400;
-  color: rgb(255 255 255 / 0.75);
+  color: var(--on-image-75);
   max-width: 460px;
 }
 
@@ -418,19 +460,19 @@ a.btn {
   padding: var(--space-2) var(--space-5);
   border: none;
   border-radius: var(--r-md);
-  background: #fff;
+  background: var(--on-image);
   color: var(--primary);
   font-size: 16px;
   font-weight: 600;
   text-decoration: none;
-  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
+  box-shadow: var(--shadow-hero);
   transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 
 @media (hover: hover) {
   .btn-hero:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
+    box-shadow: var(--shadow-hero-hover);
   }
 }
 
@@ -442,7 +484,7 @@ a.btn {
   position: absolute;
   bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
   z-index: 1;
-  color: rgb(255 255 255 / 0.7);
+  color: var(--on-image-70);
   animation: hint 1.8s var(--ease) infinite;
 }
 
@@ -461,7 +503,7 @@ a.btn {
 /* características: blanco, aire, tres tarjetas */
 .features {
   padding: calc(var(--space-6) * 2) var(--space-5);
-  background: #fff;
+  background: var(--surface);
   text-align: center;
 }
 
@@ -541,7 +583,7 @@ a.btn {
   place-items: center;
   min-height: 100dvh;
   padding: calc(var(--space-6) * 2) var(--space-5);
-  color: #fff;
+  color: var(--on-image);
 }
 
 .product::before {
@@ -557,7 +599,7 @@ a.btn {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.35), rgb(15 23 42 / 0.5));
+  background: var(--product-scrim);
 }
 
 .product-content {
@@ -594,7 +636,7 @@ a.btn {
 .product-list dd {
   font-size: 15px;
   line-height: 1.55;
-  color: rgb(255 255 255 / 0.85);
+  color: var(--on-image-85);
   margin: 0;
   max-width: 480px;
 }
@@ -605,7 +647,7 @@ a.btn {
   align-items: center;
   justify-content: center;
   padding: var(--space-6) var(--space-5);
-  background: #fff;
+  background: var(--surface);
   border-top: 1px solid var(--border);
 }
 
@@ -646,7 +688,7 @@ a.btn {
   margin: 0;
   padding: 0 var(--space-5);
   text-align: center;
-  color: #fff;
+  color: var(--on-image);
   font-weight: 600;
   font-size: 22px;
   line-height: 1.25;
@@ -662,7 +704,7 @@ a.btn {
   gap: var(--space-4);
   padding: var(--space-6) var(--space-5);
   padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
-  background: #fff;
+  background: var(--surface);
   text-align: center;
 }
 
@@ -709,7 +751,7 @@ a.btn {
   -webkit-appearance: none;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230F172A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right var(--space-3) center;
+  background: var(--surface) var(--select-arrow) no-repeat right var(--space-3) center;
   background-size: 18px;
   color: var(--text);
   font-size: 16px;
@@ -737,7 +779,7 @@ a.btn {
   font-weight: 600;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  background: #fff;
+  background: var(--surface);
   color: var(--text);
   caret-color: var(--accent);
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
@@ -758,8 +800,8 @@ a.btn {
   border: none;
   border-radius: var(--r-sm);
   background: var(--primary);
-  color: #fff;
-  box-shadow: 0 4px 16px rgb(15 23 42 / 0.25);
+  color: var(--on-primary);
+  box-shadow: var(--shadow-login);
   animation: rise 0.18s var(--ease);
   transition: background var(--t) var(--ease), transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
@@ -768,7 +810,7 @@ a.btn {
   .login-go:hover {
     background: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgb(15 23 42 / 0.3);
+    box-shadow: var(--shadow-login-hover);
   }
 }
 
@@ -844,10 +886,10 @@ a.btn {
   border: none;
   border-radius: var(--r-md);
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
   font-size: 16px;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgb(15 23 42 / 0.25);
+  box-shadow: var(--shadow-btn);
   transition: background var(--t) var(--ease), transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 
@@ -855,7 +897,7 @@ a.btn {
   .btn:hover {
     background: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgb(15 23 42 / 0.3);
+    box-shadow: var(--shadow-btn-hover);
   }
 }
 
@@ -865,13 +907,13 @@ a.btn {
 
 .btn-danger {
   background: var(--u-red);
-  box-shadow: 0 2px 8px rgb(220 38 38 / 0.3);
+  box-shadow: var(--shadow-danger);
 }
 
 @media (hover: hover) {
   .btn-danger:hover {
-    background: #B91C1C;
-    box-shadow: 0 6px 20px rgb(220 38 38 / 0.4);
+    background: var(--danger-strong);
+    box-shadow: var(--shadow-danger-hover);
   }
 }
 
@@ -883,7 +925,7 @@ a.btn {
 
 @media (hover: hover) {
   .btn-secondary:hover {
-    background: rgb(15 23 42 / 0.09);
+    background: var(--ink-a09);
     box-shadow: none;
   }
 }
@@ -954,7 +996,7 @@ a.btn {
 @media (hover: hover) {
   .card:hover {
     background:
-      linear-gradient(rgb(79 70 229 / 0.05), rgb(79 70 229 / 0.05)),
+      linear-gradient(var(--accent-a05), var(--accent-a05)),
       linear-gradient(color-mix(in srgb, var(--u) var(--tint-alpha), transparent),
         color-mix(in srgb, var(--u) var(--tint-alpha), transparent));
   }
@@ -1002,7 +1044,7 @@ a.btn {
 /* ===== Skeleton (carga) ===== */
 .skel {
   border-radius: var(--r-sm);
-  background: linear-gradient(90deg, var(--surface-2) 25%, rgb(15 23 42 / 0.1) 37%, var(--surface-2) 63%);
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--ink-a10) 37%, var(--surface-2) 63%);
   background-size: 200% 100%;
   animation: skel 1.4s ease-in-out infinite;
 }
@@ -1059,7 +1101,7 @@ html.sheet-open body {
   position: fixed;
   inset: 0;
   z-index: 20;
-  background: rgb(15 23 42 / 0.35);
+  background: var(--scrim);
   touch-action: none;
   display: flex;
   align-items: flex-end;
@@ -1183,7 +1225,7 @@ html.sheet-open body {
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  background: #fff;
+  background: var(--surface);
   color: var(--text);
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
@@ -1242,7 +1284,7 @@ html.sheet-open body {
 
 .member-row button.selected {
   border-color: var(--accent);
-  background: rgb(79 70 229 / 0.08);
+  background: var(--accent-a08);
   color: var(--text);
 }
 
@@ -1277,10 +1319,10 @@ html.sheet-open body {
 }
 
 .seg button.selected {
-  background: #fff;
+  background: var(--surface);
   color: var(--text);
   font-weight: 600;
-  box-shadow: 0 1px 4px rgb(15 23 42 / 0.12);
+  box-shadow: var(--shadow-seg);
 }
 
 /* ===== Calendario ===== */
@@ -1353,7 +1395,7 @@ html.sheet-open body {
 }
 
 .week-strip .day.selected {
-  background: rgb(79 70 229 / 0.1);
+  background: var(--accent-a10);
 }
 
 .day-dots {
@@ -1422,7 +1464,7 @@ html.sheet-open body {
 }
 
 .month-grid .cell.selected {
-  background: rgb(79 70 229 / 0.1);
+  background: var(--accent-a10);
 }
 
 /* ===== Listas ===== */
@@ -1437,7 +1479,7 @@ html.sheet-open body {
 
 @media (hover: hover) {
   .list-card:hover {
-    background: rgb(79 70 229 / 0.05);
+    background: var(--accent-a05);
   }
 }
 
@@ -1514,7 +1556,7 @@ html.sheet-open body {
 @media (hover: hover) {
   .item-row .del:hover {
     color: var(--u-red);
-    background: rgb(220 38 38 / 0.08);
+    background: var(--danger-a08);
   }
 }
 
