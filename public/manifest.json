@@ -4,8 +4,8 @@
   "description": "Tareas, calendario y listas de la familia",
   "start_url": "/app",
   "display": "standalone",
-  "background_color": "#FDF2F8",
-  "theme_color": "#FDF2F8",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
   "lang": "es",
   "icons": [
     { "src": "/icons/pwa-icon-192.png", "sizes": "192x192", "type": "image/png" },

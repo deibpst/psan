@@ -66,7 +66,7 @@
 
   /* fondo de página */
   --bg-from: #FDF2F8;
-  --chrome: #FDF2F8; /* header sólido; igual al theme-color de index.html (barra de estado) */
+  --chrome: #FFFFFF; /* header sólido; igual al theme-color de index.html. iOS pinta su barra de estado blanca (claro) o negra (oscuro) */
   --bg-mid: #FFFFFF;
   --bg-to: #E0F2FE;
   --bg-glow-a: rgb(228 0 124 / 0.08);
@@ -143,8 +143,8 @@
   --m-papa: #FB923C;
   --m-mama: #E0A896;
 
-  --bg-from: #0A0A0F;
-  --chrome: #0A0A0F;
+  --bg-from: #000000;
+  --chrome: #000000;
   --bg-mid: #0D0D14;
   --bg-to: #08080C;
   --bg-glow-a: rgb(228 0 124 / 0.14);
